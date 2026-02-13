@@ -6,12 +6,10 @@
     <Header></Header>
     
     <Error :type="client.error.type" v-if="client.error"></Error>
-    <Error type="server" v-if="!client.connected"></Error>
-    <Error type="stremio" v-if="!info.isStremioRunning"></Error>
 
     <div class="view-container">
         <div class="inner">
-            <router-view v-slot="{ Component }" v-if="client.connected">
+            <router-view v-slot="{ Component }">
                 <transition name="fade" mode="out-in">
                     <component :is="Component" />
                 </transition>
@@ -29,11 +27,9 @@ import Error from '@/components/Error.vue';
 import { APP_TITLE } from '@/common/config';
 
 import store from './store';
-import StremioService from './services/stremio.service';
 import ClientService from './services/client.service';
 
 const client = computed(() => store.state.client);
-const info = computed(() => store.state.info);
 const settings = computed(() => store.state.settings);
 
 const updateUserSettings = () => {
@@ -47,21 +43,11 @@ const updateLocaleNavigator = () => {
         store.dispatch('settings/updateLocale', navigatorLocale);
 };
 
-const checkServerRunning = () => {
-    setInterval(async () => {
-        const status = await StremioService.isServerOpen();
-        store.commit('info/updateStremioStatus', status);
-    }, 5000);
-};
-
 watch(() => client.value.ready, updateUserSettings);
 
 onMounted(() => {
-    store.dispatch('loadAddons');
     store.dispatch('client/start');
     store.dispatch('settings/load');
-
-    checkServerRunning();
     updateLocaleNavigator();
 });
 
