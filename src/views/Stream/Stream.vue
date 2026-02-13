@@ -7,30 +7,32 @@
 
     <div class="content-container">
       <div class="meta" v-if="meta">
-        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
-        <div class="title" v-else>{{ meta.name }}</div>
+        <div class="meta-center-wrapper">
+          <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
+          <div class="title" v-else>{{ meta.name }}</div>
 
-        <div class="details">
-          <div class="year">{{ meta.year }}</div>
-          <div class="runtime">{{ meta.runtime }}</div>
-          <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
-        </div>
-
-        <div class="description">{{ meta.description }}</div>
-
-        <div class="tags">
-          <div class="tag" v-for="genre in meta.genres" :key="genre">
-            {{ genre }}
+          <div class="details">
+            <div class="year">{{ meta.year }}</div>
+            <div class="runtime">{{ meta.runtime }}</div>
+            <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
           </div>
-        </div>
 
-        <div class="actions">
-          <Button large @click="showPlayer = true" icon="play-circle-outline">
-            {{ t('views.stream.watch') }}
-          </Button>
-          <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline">
-            {{ t('views.stream.trailer') }}
-          </Button>
+          <div class="description">{{ meta.description }}</div>
+
+          <div class="tags">
+            <div class="tag" v-for="genre in meta.genres" :key="genre">
+              {{ genre }}
+            </div>
+          </div>
+
+          <div class="actions">
+            <Button large @click="showPlayer = true" icon="play-circle-outline" class="action-btn">
+              {{ t('views.stream.watch') }}
+            </Button>
+            <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline" class="action-btn">
+              {{ t('views.stream.trailer') }}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -161,7 +163,7 @@ onMounted(async () => {
     .blur {
       z-index: 1;
       backdrop-filter: blur(60px);
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.85);
     }
 
     .image {
@@ -182,14 +184,23 @@ onMounted(async () => {
   .meta {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    align-items: center;
+    text-align: center;
     color: white;
-    max-width: 800px;
+
+    .meta-center-wrapper {
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
 
     .logo {
       display: block;
       width: 300px;
       max-width: 100%;
+      margin: 0 auto;
     }
 
     .title {
@@ -200,6 +211,7 @@ onMounted(async () => {
 
     .details {
       display: flex;
+      justify-content: center;
       gap: 20px;
       font-family: 'Montserrat-Medium';
       font-size: 16px;
@@ -215,6 +227,7 @@ onMounted(async () => {
 
     .tags {
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 10px;
 
@@ -228,8 +241,17 @@ onMounted(async () => {
 
     .actions {
       display: flex;
-      gap: 15px;
-      margin-top: 10px;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+      width: 100%;
+
+      .action-btn {
+        flex: 1;
+        max-width: 300px;
+        text-transform: uppercase;
+        font-family: 'Montserrat-Bold';
+      }
     }
   }
 
@@ -257,7 +279,7 @@ onMounted(async () => {
 
     .episodes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 20px;
 
       .episode-card {
@@ -279,7 +301,7 @@ onMounted(async () => {
         }
 
         .ep-thumbnail {
-          height: 140px;
+          aspect-ratio: 16/9;
           background-size: cover;
           background-position: center;
           background-color: rgba(255,255,255,0.1);
@@ -303,7 +325,7 @@ onMounted(async () => {
 
           .ep-name {
             font-family: 'Montserrat-SemiBold';
-            font-size: 16px;
+            font-size: 15px;
             margin-bottom: 5px;
             white-space: nowrap;
             overflow: hidden;
@@ -311,7 +333,7 @@ onMounted(async () => {
           }
 
           .ep-aired {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.6;
           }
         }
@@ -325,17 +347,34 @@ onMounted(async () => {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 1024px) {
+  .stream .series-navigation .episodes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .stream {
     padding: 20px 15px;
     
     .meta .actions {
       flex-direction: column;
+      align-items: center;
+      .action-btn {
+        width: 100%;
+        max-width: none;
+      }
     }
     
-    .episodes-grid {
-      grid-template-columns: 1fr;
+    .series-navigation .episodes-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
+  }
+}
+
+@media (max-width: 480px) {
+  .series-navigation .episodes-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 </style>
