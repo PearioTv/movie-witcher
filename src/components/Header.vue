@@ -1,46 +1,39 @@
 <template>
     <header :class="{ 'home': isHome }">
-		<div class="container">
-			<div class="history-back" @click="$router.go(-1)" v-show="!isHome">
-				<ion-icon name="arrow-back-sharp"></ion-icon>
+			<div class="container">
+				<div class="history-back" @click="$router.go(-1)" v-show="!isHome">
+					<ion-icon name="arrow-back-sharp"></ion-icon>
+				</div>
+
+				<router-link class="logo" to="/">
+					<span class="logo-text">Movie<span>Witcher</span></span>
+				</router-link>
+
+				<div class="version">
+					{{ appVersion }}
+				</div>
 			</div>
 
-			<router-link class="logo" to="/">
-				<img src="../assets/img/logo.svg">
-			</router-link>
-
-			<div class="version">
-				{{ appVersion }}
+			<div class="container">
+				<AButton clear icon="settings-outline" v-model="showSettings" />
 			</div>
-		</div>
-
-		<div class="container">
-			<AButton clear icon="cube-outline" v-model="showAddons" />
-			<AButton clear icon="settings-outline" v-model="showSettings" />
-		</div>
     </header>
 
-	<transition name="fade">
-		<AddonManager v-model="showAddons" v-if="showAddons"></AddonManager>
-	</transition>
-
-	<transition name="fade">
-		<Settings v-model:show="showSettings"></Settings>
-	</transition>
+		<transition name="fade">
+			<Settings v-model:show="showSettings"></Settings>
+		</transition>
 </template>
 
 <script>
 import store from '../store';
 import AButton from './ui/Button.vue';
 import Settings from './Settings';
-import AddonManager from '@/components/AddonManager.vue';
 
 export default {
 	name: 'AHeader',
 	components: {
 		AButton,
-		Settings,
-		AddonManager
+		Settings
 	},
 	computed: {
 		appVersion() {
@@ -55,7 +48,6 @@ export default {
 	data() {
 		return {
 			isHome: true,
-			showAddons: false,
 			showSettings: false
 		}
 	}
@@ -77,6 +69,8 @@ header {
 	justify-content: space-between;
 	transition: padding 0.1s ease-in-out;
 	user-select: none;
+	background: rgba(0,0,0,0.5);
+	backdrop-filter: blur(10px);
 
 	&.home {
 		padding: 0 20px;
@@ -105,14 +99,21 @@ header {
 		}
 
 		.logo {
-			width: 100px;
+			text-decoration: none;
 			user-select: none;
 			vertical-align: middle;
 			display: flex;
 			align-items: center;
 
-			img {
-				width: 100%;
+			.logo-text {
+				font-family: 'Montserrat-Bold';
+				font-size: 24px;
+				color: white;
+				letter-spacing: -1px;
+
+				span {
+					color: var(--ion-color-primary, #3880ff);
+				}
 			}
 		}
 
@@ -136,7 +137,9 @@ header {
 			gap: 15px;
 
 			.logo {
-				width: 150px;
+				.logo-text {
+					font-size: 28px;
+				}
 			}
 		}
     }

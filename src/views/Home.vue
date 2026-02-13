@@ -1,17 +1,17 @@
 <template>
     <div class="home">
         <div class="title">
-            <ATitle translate="views.home.title"/>
+            <ATitle>Movie Witcher</ATitle>
             <ATitle type="tertiary">
-                <i18n-t keypath="views.home.sub" tag="span">
-                    <ALink href="https://stremio.com">Stremio</ALink>
-                </i18n-t>
+                {{ $t('views.home.sub') }}
             </ATitle>
         </div>
 
-        <AButton large icon="play" @click="goToSearch()">
-            {{ $t('views.home.button') }}
-        </AButton>
+        <div class="actions">
+            <AButton large icon="search-outline" @click="goToSearch()">
+                {{ $t('views.search.title') }}
+            </AButton>
+        </div>
     </div>
 </template>
 
@@ -19,7 +19,6 @@
 import router from '@/router';
 
 import ATitle from '@/components/ui/Title.vue';
-import ALink from '@/components/ui/Link.vue';
 import AButton from '@/components/ui/Button.vue';
 
 const goToSearch = () => router.push({ name: 'search' });
@@ -30,12 +29,20 @@ const goToSearch = () => router.push({ name: 'search' });
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
+    min-height: 70vh;
     gap: 45px;
+    text-align: center;
 
     .title {
         display: flex;
         flex-direction: column;
         gap: 15px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 20px;
     }
 }
 </style>

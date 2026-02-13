@@ -5,7 +5,7 @@ const STREMIO_STREAMING_SERVER = "http://localhost:11470";
 const ADDON_COMMUNITY_LIST = 'https://stremio-addons.netlify.app/';
 const HLS_PLAYLIST = "stream-q-720.m3u8";
 const WS_SERVER = process.env.VUE_APP_WS_SERVER;
-const APP_TITLE = process.env.VUE_APP_TITLE;
+const APP_TITLE = "Movie Witcher";
 
 export {
     CINEMETA_URL,

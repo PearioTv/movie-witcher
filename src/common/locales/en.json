@@ -1,13 +1,13 @@
 {
     "views": {
         "home": {
-            "title": "Share your streams",
-            "sub": "Peario allows you to watch {0} streams with your friends.",
-            "button": "Create a room"
+            "title": "Movie Witcher",
+            "sub": "Watch your favorite movies and series with ease.",
+            "button": "Get Started"
         },
         "search": {
             "title": "Search",
-            "sub": "Find something you'd like to watch with your friends!",
+            "sub": "Find something you'd like to watch!",
             "segments": {
                 "movies": "Movies",
                 "series": "Series"
@@ -15,12 +15,15 @@
         },
         "stream": {
             "season": "Season",
+            "episode": "Episode",
             "misc": "Miscellaneous",
             "all": "All",
+            "watch": "Watch Now",
+            "trailer": "Watch Trailer",
             "streams": {
-                "title": "Streams",
-                "error": "No streams available",
-                "button": "Manage Addons"
+                "title": "Available Sources",
+                "error": "No sources available",
+                "button": "Settings"
             }
         }
     },
@@ -29,7 +32,7 @@
             "ready": "READY",
             "autoSync": "Auto-Sync",
             "subtitle": "Subtitle",
-            "share": "You can now share this link with your friends:"
+            "share": "Share this link with your friends:"
         },
         "settings": {
             "title": "Settings",
@@ -40,14 +43,6 @@
                 "report": "Report an issue"
             },
             "button": "Done"
-        },
-        "addons": {
-            "manifestTextInput": "Paste addon install link",
-            "communityList": "Browse more addons",
-            "types": {
-                "streams": "Streams",
-                "subtitles": "Subtitles"
-            }
         }
     },
     "errors": {
@@ -56,8 +51,8 @@
             "message": "Come back in a little while ..."
         },
         "stremio": {
-            "title": "Failed to connect to Stremio",
-            "message": "Make sure to open Stremio and disable your adblocker so Peario can operate."
+            "title": "Failed to load media data",
+            "message": "Please check your connection or try again later."
         },
         "room": {
             "title": "This room does not exists",
@@ -70,14 +65,13 @@
     },
     "loading": {
         "room": {
-            "title": "Loading the room",
+            "title": "Loading",
             "message": "It can take some times."
         }
     },
     "toasts": {
         "clipboard": "Copied to your clipboard !",
         "hlsStream": "Switched to HLS stream",
-        "sourceStream": "Switched to Source stream",
-        "userAddonSuccess": "Successfully added {0} addon !"
+        "sourceStream": "Switched to Source stream"
     }
 }

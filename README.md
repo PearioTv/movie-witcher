@@ -1,29 +1,32 @@
-# Peario
+# Movie Witcher
 
-![Build](https://github.com/tymmesyde/peario-client/workflows/Build/badge.svg?branch=master)
+**Movie Witcher** is a modern, sleek web application for streaming movies and TV shows. Built with Vue 3 and integrated with the Vidfast player, it provides a seamless watching experience with a professional interface.
 
-[Peario](https://peario.xyz) helps you watch your streams from [Stremio](https://stremio.com) with your friends.
+## Features
 
-You must have Stremio installed and running to be able to create a room and join/invite your friends.
+- 🎬 **Extensive Library**: Search for any movie or TV show using the integrated Cinemeta (Stremio) catalog.
+- 📺 **Vidfast Integration**: High-quality streaming via Vidfast player with support for movies and series.
+- 📱 **Responsive Design**: Optimized for both desktop and mobile devices.
+- 📅 **Season & Episode Selection**: Intuitive interface for browsing and selecting TV show episodes.
+- 🚀 **Fast & Lightweight**: Built on top of Vue 3 for a snappy user experience.
 
-Peario uses a server to link users together, which you can find here on GitHub: [peario-server](https://github.com/tymmesyde/peario-server)
+## Deployment
 
-![Peario Frontpage](screenshot.png)
+This project is ready to be deployed on **Vercel**. Simply connect your GitHub repository and it will automatically build and deploy.
 
-![Peario Player](screenshot1.png)
+## Development
 
-## Project setup
-```
-pnpm i
-```
+```bash
+# Install dependencies
+pnpm install
 
-### Compiles and hot-reloads for development
-```
+# Start development server
 pnpm serve
-```
 
-### Compiles and minifies for production
-```
+# Build for production
 pnpm build
 ```
 
+## Credits
+
+Based on the [peario-client](https://github.com/tymmesyde/peario-client) project, modified and enhanced for Vidfast integration and a better UI.
