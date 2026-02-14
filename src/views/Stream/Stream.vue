@@ -55,7 +55,7 @@
 
         <!-- عنوان الحلقات المبسط - فقط Episodes -->
         <div class="episodes-header">
-          <h4>{{ t('views.stream.episodes') || 'Episodes' }}</h4>
+          <h4>{{ t('') || 'Episodes' }}</h4>
         </div>
 
         <!-- شبكة الحلقات -->
