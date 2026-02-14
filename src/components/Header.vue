@@ -7,7 +7,7 @@
 
             <router-link class="logo" to="/">
                 <span class="logo-text">
-                    Movie <span>Witcher</span>
+                    Movie<span class="witcher">Witcher</span>
                 </span>
             </router-link>
 
@@ -113,10 +113,11 @@ header {
                 font-weight: 900;
                 color: white;
                 letter-spacing: 1px;
+            }
 
-                span {
-                    color: white;
-                }
+            .witcher {
+                margin-left: 8px; /* مسافة ثابتة بين الكلمتين */
+                color: white;
             }
         }
 
