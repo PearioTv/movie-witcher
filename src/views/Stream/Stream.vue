@@ -51,6 +51,9 @@
             allowfullscreen
             class="trailer-iframe"
           ></iframe>
+          <div v-else class="trailer-error">
+            <p>عذراً، لا يمكن تشغيل التريلر</p>
+          </div>
         </div>
         
         <!-- عرض المشغل الرئيسي -->
@@ -191,31 +194,64 @@ const formatRuntime = (minutes) => {
   return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 };
 
+// دالة استخراج معرف YouTube من الرابط
+const extractYouTubeId = (url) => {
+  if (!url) return null;
+  
+  // أنماط مختلفة لروابط YouTube
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtube\.com\/embed\/([^?]+)/,
+    /youtu\.be\/([^?]+)/,
+    /youtube\.com\/v\/([^?]+)/,
+    /youtube\.com\/shorts\/([^?]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  
+  // إذا كان النص نفسه هو المعرف
+  if (url.length === 11 && !url.includes('/') && !url.includes('.')) {
+    return url;
+  }
+  
+  return null;
+};
+
 // فتح التريلر في البوب أب
 const openTrailerInPopup = () => {
   if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
+    console.log('Trailer source:', trailer.source); // للتأكد من قيمة المصدر
     
-    // تحديد نوع المصدر (YouTube أو غيره)
-    if (trailer.source.includes('youtube') || trailer.source.includes('youtu.be')) {
-      // استخراج معرف اليوتيوب
-      let videoId = trailer.source;
-      if (trailer.source.includes('youtube.com/watch?v=')) {
-        videoId = trailer.source.split('v=')[1]?.split('&')[0];
-      } else if (trailer.source.includes('youtu.be/')) {
-        videoId = trailer.source.split('youtu.be/')[1]?.split('?')[0];
-      }
-      
-      if (videoId) {
-        trailerUrl.value = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-      }
-    } else {
-      // إذا كان رابط مباشر
-      trailerUrl.value = trailer.source;
+    let videoId = null;
+    
+    // التحقق من نوع المصدر
+    if (typeof trailer.source === 'string') {
+      videoId = extractYouTubeId(trailer.source);
+    } else if (trailer.source && typeof trailer.source === 'object') {
+      // إذا كان المصدر object
+      videoId = trailer.source.id || trailer.source.youtube_id || trailer.source.videoId;
     }
     
-    isTrailerMode.value = true;
-    showPlayer.value = true;
+    if (videoId) {
+      // إنشاء رابط التضمين
+      trailerUrl.value = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+      console.log('Trailer URL:', trailerUrl.value); // للتأكد من الرابط النهائي
+      
+      isTrailerMode.value = true;
+      showPlayer.value = true;
+    } else {
+      console.error('Could not extract YouTube ID from:', trailer.source);
+      // محاولة استخدام الرابط مباشرة إذا كان من YouTube
+      if (trailer.source && trailer.source.includes('youtube')) {
+        trailerUrl.value = trailer.source.replace('watch?v=', 'embed/') + '?autoplay=1&rel=0';
+        isTrailerMode.value = true;
+        showPlayer.value = true;
+      }
+    }
   }
 };
 
@@ -527,11 +563,21 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   .trailer-iframe {
     width: 100%;
     height: 100%;
     border: none;
+  }
+  
+  .trailer-error {
+    color: white;
+    text-align: center;
+    font-size: 18px;
+    padding: 20px;
   }
 }
 
