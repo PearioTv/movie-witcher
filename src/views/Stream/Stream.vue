@@ -2,97 +2,71 @@
   <div class="stream">
     <div class="background">
       <div class="blur"></div>
-      <div
-        class="image"
-        :style="`background-image: url(${meta.background})`"
-        v-if="meta && meta.background"
-      ></div>
+      <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
     </div>
 
     <div class="content-container">
       <div class="meta" v-if="meta">
-        <div class="meta-center-wrapper">
-          <img class="logo" :src="meta.logo" alt="" v-if="meta.logo" />
-          <div class="title" v-else>{{ meta.name }}</div>
+        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
+        <div class="title" v-else>{{ meta.name }}</div>
 
-          <div class="details">
-            <div>{{ meta.year }}</div>
-            <div>{{ meta.runtime }}</div>
-            <div v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+        <div class="details">
+          <div class="year">{{ meta.year }}</div>
+          <div class="runtime">{{ meta.runtime }}</div>
+          <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+        </div>
+
+        <div class="description">{{ meta.description }}</div>
+
+        <div class="tags">
+          <div class="tag" v-for="genre in meta.genres" :key="genre">
+            {{ genre }}
           </div>
+        </div>
 
-          <div class="description">{{ meta.description }}</div>
-
-          <div class="tags">
-            <div class="tag" v-for="genre in meta.genres" :key="genre">
-              {{ genre }}
-            </div>
-          </div>
-
-          <!-- ACTION BUTTONS -->
-          <div class="actions">
-            <Button
-              large
-              @click="showPlayer = true"
-              icon="play-circle-outline"
-              class="action-btn"
-            >
-              {{ t('views.stream.watch') }}
-            </Button>
-
-            <Button
-              v-if="meta.trailers && meta.trailers.length"
-              large
-              type="secondary"
-              @click="openTrailer"
-              icon="videocam-outline"
-              class="action-btn"
-            >
-              TRAILER
-            </Button>
-          </div>
+        <div class="actions">
+          <Button large @click="showPlayer = true" icon="play-circle-outline">
+            {{ t('views.stream.watch') }}
+          </Button>
+          <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline">
+            {{ t('views.stream.trailer') }}
+          </Button>
         </div>
       </div>
 
-      <!-- PLAYER -->
       <div class="player-section" v-if="showPlayer">
-        <VidfastPlayer
-          :type="meta.type"
-          :id="meta.imdb_id"
-          :season="selectedSeason"
+        <VidfastPlayer 
+          :type="meta.type" 
+          :id="meta.imdb_id" 
+          :season="selectedSeason" 
           :episode="selectedEpisodeNumber"
         />
       </div>
 
-      <!-- SERIES -->
       <div class="series-navigation" v-if="isSeries">
         <div class="section-header">
           <h3>{{ t('views.stream.season') }}</h3>
-          <Segments :segments="seasons" v-model="selectedSeason" />
+          <Segments :segments="seasons" v-model="selectedSeason">
+            <template #segment="{ segment }">
+              <span>{{ t(`views.stream.season`) }} {{ segment }}</span>
+            </template>
+          </Segments>
         </div>
 
         <div class="episodes-grid">
-          <div
-            v-for="ep in episodes"
-            :key="ep.id"
+          <div 
+            v-for="ep in episodes" 
+            :key="ep.id" 
             class="episode-card"
             :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
             @click="selectEpisode(ep)"
           >
-            <div
-              class="ep-thumbnail"
-              :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''"
-            >
-              <div class="ep-number">Ep {{ ep.episode }}</div>
+            <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
+              <div class="ep-number">{{ ep.episode }}</div>
             </div>
-
             <div class="ep-info">
-              <div class="ep-name">
-                {{ ep.name || `Episode ${ep.episode}` }}
-              </div>
-              <div class="ep-aired" v-if="ep.released">
-                {{ new Date(ep.released).toLocaleDateString() }}
-              </div>
+              <div class="ep-name">{{ ep.name || `${t('views.stream.episode')} ${ep.episode}` }}</div>
+              <div class="ep-aired" v-if="ep.released">{{ new Date(ep.released).toLocaleDateString() }}</div>
             </div>
           </div>
         </div>
@@ -102,64 +76,64 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import router from "@/router";
+import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import store from '@/store';
+import router from '@/router';
 import StremioService from "@/services/stremio.service";
-import Button from "@/components/ui/Button.vue";
-import Segments from "@/components/ui/Segments.vue";
-import VidfastPlayer from "@/components/player/VidfastPlayer.vue";
+import Button from '@/components/ui/Button.vue';
+import Segments from '@/components/ui/Segments.vue';
+import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
 
 const { t } = useI18n();
 
+const loading = ref(false);
 const meta = ref({});
 const seasons = ref([]);
 const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 
-const isSeries = computed(() => meta.value?.type === "series");
-
+const isSeries = computed(() => meta.value && meta.value.type === 'series');
 const episodes = computed(() => {
-  if (!meta.value?.videos) return [];
+  if (!meta.value || !meta.value.videos) return [];
   return meta.value.videos
-    .filter(v => v.season === selectedSeason.value)
+    .filter((video) => video.season === selectedSeason.value)
     .sort((a, b) => a.episode - b.episode);
 });
 
-const selectedEpisodeNumber = computed(() =>
-  selectedEpisode.value ? selectedEpisode.value.episode : 1
-);
+const selectedEpisodeNumber = computed(() => {
+  return selectedEpisode.value ? selectedEpisode.value.episode : 1;
+});
 
 const openTrailer = () => {
-  if (meta.value?.trailers?.length) {
+  if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
-    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, "_blank");
+    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, '_blank');
   }
 };
 
 const selectEpisode = (ep) => {
   selectedEpisode.value = ep;
   showPlayer.value = true;
+  router.replace({ params: { ...router.currentRoute.value.params, id: ep.id } });
 };
 
 onMounted(async () => {
   const { type, id } = router.currentRoute.value.params;
 
   if (id && type) {
-    const [metaId] = id.split(":");
+    const [metaId] = id.split(':');
+    meta.value = type === 'movie' ? await StremioService.getMetaMovie(metaId) : await StremioService.getMetaSeries(metaId);
 
-    meta.value =
-      type === "movie"
-        ? await StremioService.getMetaMovie(metaId)
-        : await StremioService.getMetaSeries(metaId);
+    if (meta.value && meta.value.videos && meta.value.videos.length) {
+      const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
+      selectedSeason.value = episode.season || 1;
+      selectedEpisode.value = episode;
 
-    if (meta.value?.videos?.length) {
-      seasons.value = [
-        ...new Set(meta.value.videos.map(v => v.season))
-      ].filter(Boolean);
-
-      selectedEpisode.value = meta.value.videos[0];
+      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
+        .filter(s => s > 0)
+        .sort((a, b) => a - b);
     }
   }
 });
@@ -167,153 +141,202 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .stream {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   padding: 40px 5%;
-  color: white;
 
   .background {
-    position: fixed;
-    inset: 0;
     z-index: -1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    .blur, .image {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
 
     .blur {
-      position: absolute;
-      inset: 0;
+      z-index: 1;
       backdrop-filter: blur(60px);
-      background: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 0.7);
     }
 
     .image {
-      position: absolute;
-      inset: 0;
       background-size: cover;
       background-position: center;
     }
   }
 
   .content-container {
-    max-width: 1100px;
-    margin: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 50px;
+    gap: 40px;
   }
 
   .meta {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: white;
+    max-width: 800px;
+
+    .logo {
+      display: block;
+      width: 300px;
+      max-width: 100%;
+    }
 
     .title {
-      font-size: 48px;
-      font-weight: bold;
+      font-family: 'Montserrat-Bold';
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.1;
     }
 
     .details {
       display: flex;
-      justify-content: center;
       gap: 20px;
+      font-family: 'Montserrat-Medium';
+      font-size: 16px;
       opacity: 0.8;
     }
 
     .description {
-      max-width: 700px;
-      margin: auto;
+      font-family: 'Montserrat-Regular';
+      font-size: 18px;
+      line-height: 1.6;
       opacity: 0.9;
     }
 
     .tags {
       display: flex;
-      justify-content: center;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
 
       .tag {
         background: rgba(255, 255, 255, 0.1);
-        padding: 6px 14px;
+        padding: 6px 16px;
         border-radius: 20px;
+        font-size: 14px;
       }
     }
 
     .actions {
       display: flex;
-      justify-content: center;
       gap: 15px;
-      margin-top: 25px;
-      flex-wrap: wrap;
-
-      .action-btn {
-        min-width: 180px;
-        max-width: 260px;
-        padding: 14px 20px;
-        text-transform: uppercase;
-        transition: 0.2s ease;
-      }
-
-      .action-btn:hover {
-        transform: translateY(-3px);
-      }
+      margin-top: 10px;
     }
   }
 
-  /* 🔥 Episodes Design */
+  .player-section {
+    width: 100%;
+    animation: fadeIn 0.5s ease;
+  }
+
   .series-navigation {
     display: flex;
     flex-direction: column;
-    gap: 35px;
+    gap: 30px;
+
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      
+      h3 {
+        font-family: 'Montserrat-Bold';
+        font-size: 24px;
+        color: white;
+      }
+    }
 
     .episodes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+
+      .episode-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        border: 1px solid transparent;
+
+        &:hover {
+          transform: translateY(-5px);
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &.active {
+          border-color: var(--ion-color-primary, #3880ff);
+          background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
+        }
+
+        .ep-thumbnail {
+          height: 140px;
+          background-size: cover;
+          background-position: center;
+          background-color: rgba(255,255,255,0.1);
+          position: relative;
+
+          .ep-number {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+          }
+        }
+
+        .ep-info {
+          padding: 15px;
+          color: white;
+
+          .ep-name {
+            font-family: 'Montserrat-SemiBold';
+            font-size: 16px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .ep-aired {
+            font-size: 13px;
+            opacity: 0.6;
+          }
+        }
+      }
     }
+  }
+}
 
-    .episode-card {
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 14px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: 0.25s ease;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-      &:hover {
-        transform: translateY(-6px);
-        background: rgba(255, 255, 255, 0.12);
-      }
-
-      &.active {
-        border-color: #16c784;
-        background: rgba(22, 199, 132, 0.12);
-      }
-
-      .ep-thumbnail {
-        aspect-ratio: 16/9;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-
-        .ep-number {
-          position: absolute;
-          bottom: 10px;
-          right: 10px;
-          background: rgba(0, 0, 0, 0.7);
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 13px;
-        }
-      }
-
-      .ep-info {
-        padding: 16px;
-
-        .ep-name {
-          font-weight: 600;
-          margin-bottom: 6px;
-        }
-
-        .ep-aired {
-          font-size: 13px;
-          opacity: 0.6;
-        }
-      }
+@media (max-width: 768px) {
+  .stream {
+    padding: 20px 15px;
+    
+    .meta .actions {
+      flex-direction: column;
+    }
+    
+    .episodes-grid {
+      grid-template-columns: 1fr;
     }
   }
 }
