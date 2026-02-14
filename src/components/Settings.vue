@@ -29,6 +29,7 @@
                     </div>
                     <div class="support" ref="support"></div>
                 </div>
+            </div>
 
             <AButton clear large translate="components.settings.button" @click="close()" />
         </div>
@@ -45,7 +46,6 @@ import ATitle from './ui/Title.vue';
 import AButton from './ui/Button.vue';
 import ASelect from './ui/Select.vue';
 import ATextInput from './ui/TextInput.vue';
-import ALink from './ui/Link.vue';
 
 import store from '../store';
 
@@ -54,8 +54,7 @@ export default {
         ATitle,
         AButton,
         ASelect,
-        ATextInput,
-        ALink
+        ATextInput
     },
     props: {
         show: Boolean
