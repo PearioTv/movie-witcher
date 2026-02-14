@@ -112,8 +112,7 @@ header {
                 font-size: 28px;
                 font-weight: 900;
                 color: white;
-                letter-spacing: 2px;
-                text-transform: uppercase;
+                letter-spacing: 1px;
 
                 span {
                     color: white;
