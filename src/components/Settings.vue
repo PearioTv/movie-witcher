@@ -13,6 +13,7 @@
                     </div>
                     <ASelect v-model="settings.locale" :options="localesOptions" />
                 </div>
+
                 <div class="setting">
                     <div class="label">
                         <ion-icon name="person"></ion-icon>
@@ -20,6 +21,7 @@
                     </div>
                     <ATextInput :value="settings.username || client.user.name" @change="updateUsername($event)" />
                 </div>
+
                 <div class="setting">
                     <div class="label">
                         <ion-icon name="heart"></ion-icon>
@@ -27,12 +29,15 @@
                     </div>
                     <div class="support" ref="support"></div>
                 </div>
+
                 <div class="setting">
                     <div class="label">
                         <ion-icon name="link"></ion-icon>
                         {{ $t('components.settings.links.title') }}
                     </div>
-                    <ALink href="https://github.com/tymmesyde/peario-client/issues">{{ $t('components.settings.links.report') }}</ALink>
+                    <ALink href="https://github.com/tymmesyde/peario-client/issues">
+                        {{ $t('components.settings.links.report') }}
+                    </ALink>
                 </div>
             </div>
 
@@ -100,28 +105,16 @@ export default {
     setup() {
         const support = ref(null);
 
-        const buymeacoffee = document.createElement('script');
-        buymeacoffee.setAttribute('src', 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js');
-        buymeacoffee.setAttribute('data-name', 'bmc-button');
-        buymeacoffee.setAttribute('data-slug', 'tymmesyde');
-        buymeacoffee.setAttribute('data-color', '#FFDD00');
-        buymeacoffee.setAttribute('data-emoji', '');
-        buymeacoffee.setAttribute('data-font', 'Cookie');
-        buymeacoffee.setAttribute('data-text', 'Buy me a coffee');
-        buymeacoffee.setAttribute('data-outline-color', '#000000');
-        buymeacoffee.setAttribute('data-font-color', '#000000');
-        buymeacoffee.setAttribute('data-coffee-color', '#ffffff');
-        buymeacoffee.setAttribute('async', true);
-
+        // Ko-fi only
         const kofiscript = document.createElement('script');
         kofiscript.setAttribute('src', 'https://storage.ko-fi.com/cdn/widget/Widget_2.js');
 
         const kofibuton = document.createElement('script');
-        kofibuton.text = 'kofiwidget2.init(\'Support Me on Ko-fi\', \'#29abe0\', \'G2G85BB77\');kofiwidget2.draw();';
+        kofibuton.text =
+            "kofiwidget2.init('Support Me on Ko-fi', '#29abe0', 'mwitcher');kofiwidget2.draw();";
 
         watchEffect(() => {
             if (support.value) {
-                postscribe(support.value, buymeacoffee.outerHTML);
                 postscribe(support.value, kofiscript.outerHTML);
                 postscribe(support.value, kofibuton.outerHTML);
             }
@@ -145,7 +138,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     .backdrop {
         position: absolute;
         top: 0;
@@ -219,7 +212,6 @@ export default {
     }
 
     .setting {
-
         .support {
             flex-direction: row;
         }
