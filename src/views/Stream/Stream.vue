@@ -26,11 +26,21 @@
           </div>
 
           <div class="actions">
+            <!-- Watch Now (لم يتم حذفه) -->
             <Button large @click="showPlayer = true" icon="play-circle-outline" class="action-btn">
               {{ t('views.stream.watch') }}
             </Button>
-            <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline" class="action-btn">
-              {{ t('views.stream.trailer') }}
+
+            <!-- تم تعديل النص إلى TRAILER فقط -->
+            <Button
+              v-if="meta.trailers && meta.trailers.length"
+              large
+              type="secondary"
+              @click="openTrailer"
+              icon="videocam-outline"
+              class="action-btn"
+            >
+              TRAILER
             </Button>
           </div>
         </div>
@@ -124,7 +134,9 @@ onMounted(async () => {
 
   if (id && type) {
     const [metaId] = id.split(':');
-    meta.value = type === 'movie' ? await StremioService.getMetaMovie(metaId) : await StremioService.getMetaSeries(metaId);
+    meta.value = type === 'movie'
+      ? await StremioService.getMetaMovie(metaId)
+      : await StremioService.getMetaSeries(metaId);
 
     if (meta.value && meta.value.videos && meta.value.videos.length) {
       const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
@@ -138,243 +150,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style lang="scss" scoped>
-.stream {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 40px 5%;
-
-  .background {
-    z-index: -1;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    .blur, .image {
-      position: absolute;
-      height: 100%;
-      width: 100%;
-    }
-
-    .blur {
-      z-index: 1;
-      backdrop-filter: blur(60px);
-      background-color: rgba(0, 0, 0, 0.85);
-    }
-
-    .image {
-      background-size: cover;
-      background-position: center;
-    }
-  }
-
-  .content-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    color: white;
-
-    .meta-center-wrapper {
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .logo {
-      display: block;
-      width: 300px;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-
-    .title {
-      font-family: 'Montserrat-Bold';
-      font-size: clamp(32px, 5vw, 56px);
-      line-height: 1.1;
-    }
-
-    .details {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      font-family: 'Montserrat-Medium';
-      font-size: 16px;
-      opacity: 0.8;
-    }
-
-    .description {
-      font-family: 'Montserrat-Regular';
-      font-size: 18px;
-      line-height: 1.6;
-      opacity: 0.9;
-    }
-
-    .tags {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-
-      .tag {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-      }
-    }
-
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
-      width: 100%;
-
-      .action-btn {
-        flex: 1;
-        max-width: 300px;
-        text-transform: uppercase;
-        font-family: 'Montserrat-Bold';
-      }
-    }
-  }
-
-  .player-section {
-    width: 100%;
-    animation: fadeIn 0.5s ease;
-  }
-
-  .series-navigation {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-
-    .section-header {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      
-      h3 {
-        font-family: 'Montserrat-Bold';
-        font-size: 24px;
-        color: white;
-      }
-    }
-
-    .episodes-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-
-      .episode-card {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-        border: 1px solid transparent;
-
-        &:hover {
-          transform: translateY(-5px);
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        &.active {
-          border-color: var(--ion-color-primary, #3880ff);
-          background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
-        }
-
-        .ep-thumbnail {
-          aspect-ratio: 16/9;
-          background-size: cover;
-          background-position: center;
-          background-color: rgba(255,255,255,0.1);
-          position: relative;
-
-          .ep-number {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: white;
-          }
-        }
-
-        .ep-info {
-          padding: 15px;
-          color: white;
-
-          .ep-name {
-            font-family: 'Montserrat-SemiBold';
-            font-size: 15px;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .ep-aired {
-            font-size: 12px;
-            opacity: 0.6;
-          }
-        }
-      }
-    }
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 1024px) {
-  .stream .series-navigation .episodes-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .stream {
-    padding: 20px 15px;
-    
-    .meta .actions {
-      flex-direction: column;
-      align-items: center;
-      .action-btn {
-        width: 100%;
-        max-width: none;
-      }
-    }
-    
-    .series-navigation .episodes-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .series-navigation .episodes-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-</style>
