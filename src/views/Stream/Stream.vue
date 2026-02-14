@@ -24,11 +24,12 @@
           </div>
         </div>
 
+        <!-- الأزرار المعدلة - مصغرة وبدون "Watch" في التريلر -->
         <div class="actions">
-          <Button large @click="showPlayer = true" icon="play-circle-outline">
+          <Button @click="showPlayer = true" icon="play-circle-outline">
             {{ t('views.stream.watch') }}
           </Button>
-          <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline">
+          <Button v-if="meta.trailers && meta.trailers.length" type="secondary" @click="openTrailer" icon="videocam-outline">
             {{ t('views.stream.trailer') }}
           </Button>
         </div>
@@ -43,23 +44,18 @@
         />
       </div>
 
+      <!-- قسم المسلسل المعدل - بدون عناوين إضافية -->
       <div class="series-navigation" v-if="isSeries">
-        <!-- قسم المواسم -->
-        <div class="section-header">
-          <h3>{{ t('views.stream.seasons') || 'Seasons' }}</h3>
-          <Segments :segments="seasons" v-model="selectedSeason">
-            <template #segment="{ segment }">
-              <span>{{ t('views.stream.season') || 'Season' }} {{ segment }}</span>
-            </template>
-          </Segments>
-        </div>
+        <!-- أزرار المواسم فقط بدون عنوان Seasons -->
+        <Segments :segments="seasons" v-model="selectedSeason">
+          <template #segment="{ segment }">
+            <span>{{ t('views.stream.season') || 'Season' }} {{ segment }}</span>
+          </template>
+        </Segments>
 
-        <!-- عنوان الحلقات -->
+        <!-- عنوان الحلقات المبسط - فقط Episodes -->
         <div class="episodes-header">
-          <div class="episodes-title-wrapper">
-            <h4>{{ t('views.stream.episodes') || 'Episodes' }}</h4>
-            <span class="check-whole-season">{{ t('views.stream.checkWholeSeason') || 'Check Whole Season for download' }}</span>
-          </div>
+          <h4>{{ t('views.stream.episodes') || 'Episodes' }}</h4>
         </div>
 
         <!-- شبكة الحلقات -->
@@ -97,9 +93,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'; // تم إزالة 'watch' غير المستخدم
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-// تم إزالة 'store' غير المستخدم
 import router from '@/router';
 import StremioService from "@/services/stremio.service";
 import Button from '@/components/ui/Button.vue';
@@ -108,7 +103,6 @@ import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
 
 const { t } = useI18n();
 
-// تم إزالة متغير 'loading' غير المستخدم
 const meta = ref({});
 const seasons = ref([]);
 const selectedSeason = ref(1);
@@ -268,10 +262,22 @@ onMounted(async () => {
       }
     }
 
+    // الأزرار المعدلة - مصغرة
     .actions {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       margin-top: 10px;
+      
+      :deep(button) {
+        padding: 8px 20px;
+        font-size: 14px;
+        min-width: auto;
+        
+        .icon {
+          font-size: 18px;
+          margin-right: 6px;
+        }
+      }
     }
   }
 
@@ -280,53 +286,32 @@ onMounted(async () => {
     animation: fadeIn 0.5s ease;
   }
 
+  // قسم المسلسل المعدل
   .series-navigation {
     display: flex;
     flex-direction: column;
     gap: 30px;
-
-    .section-header {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+    
+    // تنسيق أزرار المواسم
+    :deep(.segments) {
+      margin-top: 0;
       
-      h3 {
-        font-family: 'Montserrat-Bold';
-        font-size: 24px;
-        color: white;
-        margin: 0;
+      .segment-button {
+        padding: 6px 16px;
+        font-size: 14px;
       }
     }
-
+    
+    // عنوان الحلقات المبسط
     .episodes-header {
       margin-top: 10px;
       
-      .episodes-title-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 15px;
-        
-        h4 {
-          font-family: 'Montserrat-Bold';
-          font-size: 20px;
-          color: white;
-          margin: 0;
-        }
-        
-        .check-whole-season {
-          font-size: 14px;
-          color: #4a9eff;
-          cursor: pointer;
-          opacity: 0.9;
-          transition: opacity 0.2s;
-          
-          &:hover {
-            opacity: 1;
-            text-decoration: underline;
-          }
-        }
+      h4 {
+        font-family: 'Montserrat-Bold';
+        font-size: 18px;
+        color: white;
+        margin: 0 0 15px 0;
+        opacity: 0.9;
       }
     }
 
@@ -456,8 +441,15 @@ onMounted(async () => {
   .stream {
     padding: 20px 15px;
     
-    .meta .actions {
-      flex-direction: column;
+    .meta {
+      .actions {
+        flex-direction: row;
+        justify-content: flex-start;
+        
+        :deep(button) {
+          flex: 0 1 auto;
+        }
+      }
     }
     
     .series-navigation {
@@ -477,13 +469,6 @@ onMounted(async () => {
               gap: 12px;
             }
           }
-        }
-      }
-      
-      .episodes-header {
-        .episodes-title-wrapper {
-          flex-direction: column;
-          align-items: flex-start;
         }
       }
     }
