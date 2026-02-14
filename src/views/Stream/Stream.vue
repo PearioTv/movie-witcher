@@ -2,19 +2,25 @@
   <div class="stream">
     <div class="background">
       <div class="blur"></div>
-      <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
+      <div
+        class="image"
+        :style="`background-image: url(${meta.background})`"
+        v-if="meta && meta.background"
+      ></div>
     </div>
 
     <div class="content-container">
       <div class="meta" v-if="meta">
         <div class="meta-center-wrapper">
-          <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
+          <img class="logo" :src="meta.logo" alt="" v-if="meta.logo" />
           <div class="title" v-else>{{ meta.name }}</div>
 
           <div class="details">
             <div class="year">{{ meta.year }}</div>
             <div class="runtime">{{ meta.runtime }}</div>
-            <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+            <div class="rating" v-if="meta.imdbRating">
+              ⭐ {{ meta.imdbRating }}
+            </div>
           </div>
 
           <div class="description">{{ meta.description }}</div>
@@ -25,13 +31,17 @@
             </div>
           </div>
 
+          <!-- ACTION BUTTONS -->
           <div class="actions">
-            <!-- Watch Now (لم يتم حذفه) -->
-            <Button large @click="showPlayer = true" icon="play-circle-outline" class="action-btn">
+            <Button
+              large
+              @click="showPlayer = true"
+              icon="play-circle-outline"
+              class="action-btn"
+            >
               {{ t('views.stream.watch') }}
             </Button>
 
-            <!-- تم تعديل النص إلى TRAILER فقط -->
             <Button
               v-if="meta.trailers && meta.trailers.length"
               large
@@ -47,10 +57,10 @@
       </div>
 
       <div class="player-section" v-if="showPlayer">
-        <VidfastPlayer 
-          :type="meta.type" 
-          :id="meta.imdb_id" 
-          :season="selectedSeason" 
+        <VidfastPlayer
+          :type="meta.type"
+          :id="meta.imdb_id"
+          :season="selectedSeason"
           :episode="selectedEpisodeNumber"
         />
       </div>
@@ -66,19 +76,27 @@
         </div>
 
         <div class="episodes-grid">
-          <div 
-            v-for="ep in episodes" 
-            :key="ep.id" 
+          <div
+            v-for="ep in episodes"
+            :key="ep.id"
             class="episode-card"
             :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
             @click="selectEpisode(ep)"
           >
-            <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
+            <div
+              class="ep-thumbnail"
+              :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''"
+            >
               <div class="ep-number">{{ ep.episode }}</div>
             </div>
+
             <div class="ep-info">
-              <div class="ep-name">{{ ep.name || `${t('views.stream.episode')} ${ep.episode}` }}</div>
-              <div class="ep-aired" v-if="ep.released">{{ new Date(ep.released).toLocaleDateString() }}</div>
+              <div class="ep-name">
+                {{ ep.name || `${t('views.stream.episode')} ${ep.episode}` }}
+              </div>
+              <div class="ep-aired" v-if="ep.released">
+                {{ new Date(ep.released).toLocaleDateString() }}
+              </div>
             </div>
           </div>
         </div>
@@ -88,13 +106,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import router from '@/router';
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import router from "@/router";
 import StremioService from "@/services/stremio.service";
-import Button from '@/components/ui/Button.vue';
-import Segments from '@/components/ui/Segments.vue';
-import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
+import Button from "@/components/ui/Button.vue";
+import Segments from "@/components/ui/Segments.vue";
+import VidfastPlayer from "@/components/player/VidfastPlayer.vue";
 
 const { t } = useI18n();
 
@@ -104,7 +122,8 @@ const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 
-const isSeries = computed(() => meta.value && meta.value.type === 'series');
+const isSeries = computed(() => meta.value && meta.value.type === "series");
+
 const episodes = computed(() => {
   if (!meta.value || !meta.value.videos) return [];
   return meta.value.videos
@@ -112,41 +131,169 @@ const episodes = computed(() => {
     .sort((a, b) => a.episode - b.episode);
 });
 
-const selectedEpisodeNumber = computed(() => {
-  return selectedEpisode.value ? selectedEpisode.value.episode : 1;
-});
+const selectedEpisodeNumber = computed(() =>
+  selectedEpisode.value ? selectedEpisode.value.episode : 1
+);
 
 const openTrailer = () => {
   if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
-    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, '_blank');
+    window.open(
+      `https://www.youtube.com/watch?v=${trailer.source}`,
+      "_blank"
+    );
   }
 };
 
 const selectEpisode = (ep) => {
   selectedEpisode.value = ep;
   showPlayer.value = true;
-  router.replace({ params: { ...router.currentRoute.value.params, id: ep.id } });
+  router.replace({
+    params: { ...router.currentRoute.value.params, id: ep.id },
+  });
 };
 
 onMounted(async () => {
   const { type, id } = router.currentRoute.value.params;
 
   if (id && type) {
-    const [metaId] = id.split(':');
-    meta.value = type === 'movie'
-      ? await StremioService.getMetaMovie(metaId)
-      : await StremioService.getMetaSeries(metaId);
+    const [metaId] = id.split(":");
 
-    if (meta.value && meta.value.videos && meta.value.videos.length) {
-      const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
+    meta.value =
+      type === "movie"
+        ? await StremioService.getMetaMovie(metaId)
+        : await StremioService.getMetaSeries(metaId);
+
+    if (meta.value?.videos?.length) {
+      const episode =
+        meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) ||
+        meta.value.videos[0];
+
       selectedSeason.value = episode.season || 1;
       selectedEpisode.value = episode;
 
-      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
-        .filter(s => s > 0)
+      seasons.value = [
+        ...new Set(meta.value.videos.map(({ season }) => season)),
+      ]
+        .filter((s) => s > 0)
         .sort((a, b) => a - b);
     }
   }
 });
 </script>
+
+<style lang="scss" scoped>
+.stream {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 40px 5%;
+
+  .background {
+    z-index: -1;
+    position: fixed;
+    inset: 0;
+
+    .blur,
+    .image {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
+
+    .blur {
+      backdrop-filter: blur(60px);
+      background-color: rgba(0, 0, 0, 0.85);
+    }
+
+    .image {
+      background-size: cover;
+      background-position: center;
+    }
+  }
+
+  .content-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: white;
+
+    .meta-center-wrapper {
+      max-width: 750px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      width: 280px;
+      max-width: 100%;
+    }
+
+    .title {
+      font-family: "Montserrat-Bold";
+      font-size: clamp(32px, 5vw, 56px);
+    }
+
+    .details {
+      display: flex;
+      gap: 20px;
+      font-size: 15px;
+      opacity: 0.8;
+    }
+
+    .description {
+      font-size: 17px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      .tag {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+      }
+    }
+
+    /* 🔥 PROFESSIONAL BUTTON LAYOUT */
+    .actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+
+      .action-btn {
+        min-width: 180px;
+        max-width: 260px;
+        padding: 14px 20px;
+        text-transform: uppercase;
+        font-family: "Montserrat-Bold";
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+</style>
