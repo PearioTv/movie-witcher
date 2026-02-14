@@ -30,17 +30,6 @@
                     <div class="support" ref="support"></div>
                 </div>
 
-                <div class="setting">
-                    <div class="label">
-                        <ion-icon name="link"></ion-icon>
-                        {{ $t('components.settings.links.title') }}
-                    </div>
-                    <ALink href="https://github.com/tymmesyde/peario-client/issues">
-                        {{ $t('components.settings.links.report') }}
-                    </ALink>
-                </div>
-            </div>
-
             <AButton clear large translate="components.settings.button" @click="close()" />
         </div>
     </div>
