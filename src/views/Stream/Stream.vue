@@ -1,18 +1,19 @@
 <template>
   <div class="stream">
+    <!-- الخلفية -->
     <div class="background">
       <div class="blur"></div>
       <div
+        v-if="meta?.background"
         class="image"
-        v-if="meta && meta.background"
         :style="`background-image: url(${meta.background})`"
       ></div>
     </div>
 
     <div class="content-container">
       <div class="meta" v-if="meta">
-        <img class="logo" :src="meta.logo" v-if="meta.logo" />
-        <div class="title" v-else>{{ meta.name }}</div>
+        <img v-if="meta.logo" class="logo" :src="meta.logo" />
+        <div v-else class="title">{{ meta.name }}</div>
 
         <div class="details">
           <div>{{ meta.year }}</div>
@@ -23,7 +24,7 @@
         <div class="description">{{ meta.description }}</div>
 
         <div class="tags">
-          <div class="tag" v-for="g in meta.genres" :key="g">
+          <div v-for="g in meta.genres" :key="g" class="tag">
             {{ g }}
           </div>
         </div>
@@ -44,8 +45,8 @@
         </div>
       </div>
 
-      <!-- مواسم + حلقات (لم نحذفها) -->
-      <div class="series-navigation" v-if="isSeries">
+      <!-- مواسم -->
+      <div v-if="isSeries" class="series-navigation">
         <Segments :segments="seasons" v-model="selectedSeason">
           <template #segment="{ segment }">
             Season {{ segment }}
@@ -60,15 +61,13 @@
             :class="{ active: selectedEpisode?.id === ep.id }"
             @click="selectEpisode(ep)"
           >
-            <div class="ep-name">
-              {{ ep.episode }}. {{ ep.name }}
-            </div>
+            {{ ep.episode }}. {{ ep.name }}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 🎬 Popup Player -->
+    <!-- 🎬 POPUP PLAYER -->
     <transition name="popup">
       <div
         v-if="showPlayer"
@@ -118,12 +117,10 @@ const episodes = computed(() => {
 
 const openPlayer = () => {
   showPlayer.value = true;
-  document.body.style.overflow = "hidden";
 };
 
 const closePlayer = () => {
   showPlayer.value = false;
-  document.body.style.overflow = "auto";
 };
 
 const handleEsc = (e) => {
@@ -133,7 +130,10 @@ const handleEsc = (e) => {
 const openTrailer = () => {
   if (meta.value?.trailers?.length) {
     const trailer = meta.value.trailers[0];
-    window.open(`https://youtube.com/watch?v=${trailer.source}`, "_blank");
+    window.open(
+      `https://youtube.com/watch?v=${trailer.source}`,
+      "_blank"
+    );
   }
 };
 
@@ -149,6 +149,7 @@ onMounted(async () => {
 
   if (type && id) {
     const [metaId] = id.split(":");
+
     meta.value =
       type === "movie"
         ? await StremioService.getMetaMovie(metaId)
@@ -170,11 +171,17 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.stream {
+  min-height: 100vh;
+  padding: 40px 5%;
+  color: white;
+}
+
 .player-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,8 +200,8 @@ onUnmounted(() => {
 
 .close-btn {
   position: absolute;
-  top: 12px;
-  right: 16px;
+  top: 14px;
+  right: 18px;
   font-size: 26px;
   color: white;
   cursor: pointer;
@@ -204,6 +211,7 @@ onUnmounted(() => {
 .popup-leave-active {
   transition: opacity 0.3s ease;
 }
+
 .popup-enter-from,
 .popup-leave-to {
   opacity: 0;
