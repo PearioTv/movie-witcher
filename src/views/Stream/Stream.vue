@@ -2,18 +2,24 @@
   <div class="stream">
     <div class="background">
       <div class="blur"></div>
-      <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
+      <div
+        class="image"
+        :style="`background-image: url(${meta.background})`"
+        v-if="meta && meta.background"
+      ></div>
     </div>
 
     <div class="content-container">
       <div class="meta" v-if="meta">
-        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
+        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo" />
         <div class="title" v-else>{{ meta.name }}</div>
 
         <div class="details">
           <div class="year">{{ meta.year }}</div>
           <div class="runtime">{{ meta.runtime }}</div>
-          <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+          <div class="rating" v-if="meta.imdbRating">
+            ⭐ {{ meta.imdbRating }}
+          </div>
         </div>
 
         <div class="description">{{ meta.description }}</div>
@@ -28,20 +34,24 @@
           <Button @click="showPlayer = true" icon="play-circle-outline">
             {{ t('views.stream.watch') }}
           </Button>
-          <Button v-if="meta.trailers && meta.trailers.length" type="secondary" @click="openTrailer" icon="videocam-outline">
+          <Button
+            v-if="meta.trailers && meta.trailers.length"
+            type="secondary"
+            @click="openTrailer"
+            icon="videocam-outline"
+          >
             {{ t('views.stream.trailer') }}
           </Button>
         </div>
       </div>
 
-      <!-- ⚠️ نحذف عرض البلاير العادي -->
-      <!-- <div class="player-section" v-if="showPlayer"> ... </div> -->
+      <!-- نحذف عرض البلاير الداخلي حتى لا يكسر التصميم -->
+      <!-- <div class="player-section" v-if="showPlayer"> -->
 
-      <!-- قسم المسلسل -->
       <div class="series-navigation" v-if="isSeries">
         <Segments :segments="seasons" v-model="selectedSeason">
           <template #segment="{ segment }">
-            <span>{{ t('views.stream.season') || 'Season' }} {{ segment }}</span>
+            <span>Season {{ segment }}</span>
           </template>
         </Segments>
 
@@ -50,29 +60,37 @@
         </div>
 
         <div class="episodes-grid">
-          <div 
-            v-for="ep in episodes" 
-            :key="ep.id" 
+          <div
+            v-for="ep in episodes"
+            :key="ep.id"
             class="episode-card"
             :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
             @click="selectEpisode(ep)"
           >
-            <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
+            <div
+              class="ep-thumbnail"
+              :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''"
+            >
               <div class="ep-number">{{ ep.episode }}</div>
             </div>
-            
+
             <div class="ep-info">
               <div class="ep-name">
                 <span class="ep-number-title">
-                  {{ ep.episode }}. {{ ep.name || `Episode ${ep.episode}` }}
+                  {{ ep.episode }}.
+                  {{ ep.name || `Episode ${ep.episode}` }}
                 </span>
               </div>
-              
+
               <div class="ep-meta">
-                <span class="ep-aired" v-if="ep.released">{{ formatDate(ep.released) }}</span>
-                <span class="ep-runtime" v-if="ep.runtime">{{ formatRuntime(ep.runtime) }}</span>
+                <span class="ep-aired" v-if="ep.released">
+                  {{ formatDate(ep.released) }}
+                </span>
+                <span class="ep-runtime" v-if="ep.runtime">
+                  {{ formatRuntime(ep.runtime) }}
+                </span>
               </div>
-              
+
               <div class="ep-description" v-if="ep.description">
                 {{ ep.description }}
               </div>
@@ -82,36 +100,38 @@
       </div>
     </div>
 
-    <!-- 🎬 POPUP PLAYER -->
-    <transition name="popup">
-      <div
-        v-if="showPlayer"
-        class="player-overlay"
-        @click.self="closePlayer"
-      >
-        <div class="player-modal">
-          <span class="close-btn" @click="closePlayer">✕</span>
+    <!-- 🎬 POPUP PLAYER باستخدام Teleport (آمن 100%) -->
+    <Teleport to="body">
+      <transition name="popup">
+        <div
+          v-if="showPlayer"
+          class="player-overlay"
+          @click.self="closePlayer"
+        >
+          <div class="player-modal">
+            <span class="close-btn" @click="closePlayer">✕</span>
 
-          <VidfastPlayer 
-            :type="meta.type" 
-            :id="meta.imdb_id" 
-            :season="selectedSeason" 
-            :episode="selectedEpisodeNumber"
-          />
+            <VidfastPlayer
+              :type="meta.type"
+              :id="meta.imdb_id"
+              :season="selectedSeason"
+              :episode="selectedEpisodeNumber"
+            />
+          </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import router from '@/router';
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import router from "@/router";
 import StremioService from "@/services/stremio.service";
-import Button from '@/components/ui/Button.vue';
-import Segments from '@/components/ui/Segments.vue';
-import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
+import Button from "@/components/ui/Button.vue";
+import Segments from "@/components/ui/Segments.vue";
+import VidfastPlayer from "@/components/player/VidfastPlayer.vue";
 
 const { t } = useI18n();
 
@@ -121,7 +141,7 @@ const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 
-const isSeries = computed(() => meta.value && meta.value.type === 'series');
+const isSeries = computed(() => meta.value && meta.value.type === "series");
 
 const episodes = computed(() => {
   if (!meta.value || !meta.value.videos) return [];
@@ -134,39 +154,82 @@ const selectedEpisodeNumber = computed(() => {
   return selectedEpisode.value ? selectedEpisode.value.episode : 1;
 });
 
+/* ======== مهم جداً حتى لا يحصل خطأ ======== */
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const formatRuntime = (minutes) => {
+  if (!minutes) return "";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+};
+/* ========================================= */
+
 const closePlayer = () => {
   showPlayer.value = false;
 };
 
 const handleEsc = (e) => {
-  if (e.key === 'Escape') closePlayer();
+  if (e.key === "Escape") closePlayer();
+};
+
+const openTrailer = () => {
+  if (meta.value.trailers && meta.value.trailers.length) {
+    const trailer = meta.value.trailers[0];
+    window.open(
+      `https://www.youtube.com/watch?v=${trailer.source}`,
+      "_blank"
+    );
+  }
+};
+
+const selectEpisode = (ep) => {
+  selectedEpisode.value = ep;
+  showPlayer.value = true;
+  router.replace({
+    params: { ...router.currentRoute.value.params, id: ep.id },
+  });
 };
 
 onMounted(async () => {
-  window.addEventListener('keydown', handleEsc);
+  window.addEventListener("keydown", handleEsc);
 
   const { type, id } = router.currentRoute.value.params;
 
   if (id && type) {
-    const [metaId] = id.split(':');
-    meta.value = type === 'movie'
-      ? await StremioService.getMetaMovie(metaId)
-      : await StremioService.getMetaSeries(metaId);
+    const [metaId] = id.split(":");
+    meta.value =
+      type === "movie"
+        ? await StremioService.getMetaMovie(metaId)
+        : await StremioService.getMetaSeries(metaId);
 
     if (meta.value?.videos?.length) {
-      const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
+      const episode =
+        meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) ||
+        meta.value.videos[0];
+
       selectedSeason.value = episode.season || 1;
       selectedEpisode.value = episode;
 
-      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
-        .filter(s => s > 0)
+      seasons.value = [
+        ...new Set(meta.value.videos.map(({ season }) => season)),
+      ]
+        .filter((s) => s > 0)
         .sort((a, b) => a - b);
     }
   }
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleEsc);
+  window.removeEventListener("keydown", handleEsc);
 });
 </script>
 
@@ -174,12 +237,12 @@ onUnmounted(() => {
 .player-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 999999;
 }
 
 .player-modal {
