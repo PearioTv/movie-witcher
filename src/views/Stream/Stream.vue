@@ -2,116 +2,92 @@
   <div class="stream">
     <div class="background">
       <div class="blur"></div>
-      <div
-        class="image"
-        :style="`background-image: url(${meta.background})`"
-        v-if="meta && meta.background"
-      ></div>
+      <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
     </div>
 
     <div class="content-container">
-      <!-- META -->
       <div class="meta" v-if="meta">
-        <div class="meta-center-wrapper">
-          <img class="logo" :src="meta.logo" v-if="meta.logo" />
-          <div class="title" v-else>{{ meta.name }}</div>
+        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
+        <div class="title" v-else>{{ meta.name }}</div>
 
-          <div class="details">
-            <div>{{ meta.year }}</div>
-            <div>{{ meta.runtime }}</div>
-            <div v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+        <div class="details">
+          <div class="year">{{ meta.year }}</div>
+          <div class="runtime">{{ meta.runtime }}</div>
+          <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
+        </div>
+
+        <div class="description">{{ meta.description }}</div>
+
+        <div class="tags">
+          <div class="tag" v-for="genre in meta.genres" :key="genre">
+            {{ genre }}
           </div>
+        </div>
 
-          <div class="description">
-            {{ meta.description }}
-          </div>
-
-          <div class="tags">
-            <div class="tag" v-for="genre in meta.genres" :key="genre">
-              {{ genre }}
-            </div>
-          </div>
-
-          <div class="actions">
-            <Button
-              large
-              @click="showPlayer = true"
-              icon="play-circle-outline"
-              class="action-btn"
-            >
-              {{ t('views.stream.watch') }}
-            </Button>
-
-            <Button
-              v-if="meta.trailers && meta.trailers.length"
-              large
-              type="secondary"
-              @click="openTrailer"
-              icon="videocam-outline"
-              class="action-btn"
-            >
-              TRAILER
-            </Button>
-          </div>
+        <div class="actions">
+          <Button large @click="showPlayer = true" icon="play-circle-outline">
+            {{ t('views.stream.watch') }}
+          </Button>
+          <Button v-if="meta.trailers && meta.trailers.length" large type="secondary" @click="openTrailer" icon="videocam-outline">
+            {{ t('views.stream.trailer') }}
+          </Button>
         </div>
       </div>
 
-      <!-- PLAYER -->
       <div class="player-section" v-if="showPlayer">
-        <VidfastPlayer
-          :type="meta.type"
-          :id="meta.imdb_id"
-          :season="selectedSeason"
+        <VidfastPlayer 
+          :type="meta.type" 
+          :id="meta.imdb_id" 
+          :season="selectedSeason" 
           :episode="selectedEpisodeNumber"
         />
       </div>
 
-      <!-- SERIES SECTION -->
       <div class="series-navigation" v-if="isSeries">
-        <h2 class="season-title">Seasons</h2>
-
-        <!-- SEASON TABS -->
-        <div class="season-tabs">
-          <button
-            v-for="season in seasons"
-            :key="season"
-            :class="['season-tab', { active: selectedSeason === season }]"
-            @click="selectedSeason = season"
-          >
-            Season {{ season }}
-          </button>
+        <!-- قسم المواسم -->
+        <div class="section-header">
+          <h3>{{ t('views.stream.seasons') || 'Seasons' }}</h3>
+          <Segments :segments="seasons" v-model="selectedSeason">
+            <template #segment="{ segment }">
+              <span>{{ t('views.stream.season') || 'Season' }} {{ segment }}</span>
+            </template>
+          </Segments>
         </div>
 
-        <h3 class="episodes-title">Episodes</h3>
+        <!-- عنوان الحلقات -->
+        <div class="episodes-header">
+          <div class="episodes-title-wrapper">
+            <h4>{{ t('views.stream.episodes') || 'Episodes' }}</h4>
+            <span class="check-whole-season">{{ t('views.stream.checkWholeSeason') || 'Check Whole Season for download' }}</span>
+          </div>
+        </div>
 
-        <!-- EPISODES GRID -->
+        <!-- شبكة الحلقات -->
         <div class="episodes-grid">
-          <div
-            v-for="ep in episodes"
-            :key="ep.id"
+          <div 
+            v-for="ep in episodes" 
+            :key="ep.id" 
             class="episode-card"
+            :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
             @click="selectEpisode(ep)"
           >
-            <div
-              class="episode-image"
-              :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''"
-            ></div>
-
-            <div class="episode-content">
-              <h4 class="episode-name">
-                {{ ep.episode }}. {{ ep.name }}
-              </h4>
-
-              <div class="episode-meta">
-                <span v-if="ep.released">
-                  {{ new Date(ep.released).toLocaleDateString() }}
-                </span>
-                <span v-if="ep.runtime"> • {{ ep.runtime }}</span>
+            <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
+              <div class="ep-number">{{ ep.episode }}</div>
+            </div>
+            
+            <div class="ep-info">
+              <div class="ep-name">
+                <span class="ep-number-title">{{ ep.episode }}. {{ ep.name || `${t('views.stream.episode') || 'Episode'} ${ep.episode}` }}</span>
               </div>
-
-              <p class="episode-description">
+              
+              <div class="ep-meta">
+                <span class="ep-aired" v-if="ep.released">{{ formatDate(ep.released) }}</span>
+                <span class="ep-runtime" v-if="ep.runtime">{{ formatRuntime(ep.runtime) }}</span>
+              </div>
+              
+              <div class="ep-description" v-if="ep.description">
                 {{ ep.description }}
-              </p>
+              </div>
             </div>
           </div>
         </div>
@@ -121,66 +97,83 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import router from "@/router";
+import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import store from '@/store';
+import router from '@/router';
 import StremioService from "@/services/stremio.service";
-import Button from "@/components/ui/Button.vue";
-import VidfastPlayer from "@/components/player/VidfastPlayer.vue";
+import Button from '@/components/ui/Button.vue';
+import Segments from '@/components/ui/Segments.vue';
+import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
 
 const { t } = useI18n();
 
+const loading = ref(false);
 const meta = ref({});
 const seasons = ref([]);
 const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 
-const isSeries = computed(() => meta.value?.type === "series");
-
+const isSeries = computed(() => meta.value && meta.value.type === 'series');
 const episodes = computed(() => {
-  if (!meta.value?.videos) return [];
+  if (!meta.value || !meta.value.videos) return [];
   return meta.value.videos
-    .filter(v => v.season === selectedSeason.value)
+    .filter((video) => video.season === selectedSeason.value)
     .sort((a, b) => a.episode - b.episode);
 });
 
-const selectedEpisodeNumber = computed(() =>
-  selectedEpisode.value ? selectedEpisode.value.episode : 1
-);
+const selectedEpisodeNumber = computed(() => {
+  return selectedEpisode.value ? selectedEpisode.value.episode : 1;
+});
+
+// دالة تنسيق التاريخ
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+};
+
+// دالة تنسيق مدة العرض
+const formatRuntime = (minutes) => {
+  if (!minutes) return '';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+};
 
 const openTrailer = () => {
-  if (meta.value?.trailers?.length) {
+  if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
-    window.open(
-      `https://www.youtube.com/watch?v=${trailer.source}`,
-      "_blank"
-    );
+    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, '_blank');
   }
 };
 
 const selectEpisode = (ep) => {
   selectedEpisode.value = ep;
   showPlayer.value = true;
+  router.replace({ params: { ...router.currentRoute.value.params, id: ep.id } });
 };
 
 onMounted(async () => {
   const { type, id } = router.currentRoute.value.params;
 
   if (id && type) {
-    const [metaId] = id.split(":");
+    const [metaId] = id.split(':');
+    meta.value = type === 'movie' ? await StremioService.getMetaMovie(metaId) : await StremioService.getMetaSeries(metaId);
 
-    meta.value =
-      type === "movie"
-        ? await StremioService.getMetaMovie(metaId)
-        : await StremioService.getMetaSeries(metaId);
+    if (meta.value && meta.value.videos && meta.value.videos.length) {
+      const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
+      selectedSeason.value = episode.season || 1;
+      selectedEpisode.value = episode;
 
-    if (meta.value?.videos?.length) {
-      seasons.value = [
-        ...new Set(meta.value.videos.map(v => v.season))
-      ].filter(Boolean);
-
-      selectedEpisode.value = meta.value.videos[0];
+      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
+        .filter(s => s > 0)
+        .sort((a, b) => a - b);
     }
   }
 });
@@ -188,24 +181,32 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .stream {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   padding: 40px 5%;
-  color: white;
 
   .background {
-    position: fixed;
-    inset: 0;
     z-index: -1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    .blur, .image {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
 
     .blur {
-      position: absolute;
-      inset: 0;
+      z-index: 1;
       backdrop-filter: blur(60px);
-      background: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 0.7);
     }
 
     .image {
-      position: absolute;
-      inset: 0;
       background-size: cover;
       background-position: center;
     }
@@ -213,97 +214,295 @@ onMounted(async () => {
 
   .content-container {
     max-width: 1200px;
-    margin: auto;
+    margin: 0 auto;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 50px;
+    gap: 40px;
   }
 
-  .season-title {
-    font-size: 22px;
-    font-weight: 600;
-  }
-
-  .season-tabs {
+  .meta {
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-  }
-
-  .season-tab {
-    background: #1c2333;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 12px;
+    flex-direction: column;
+    gap: 20px;
     color: white;
-    cursor: pointer;
-    transition: 0.2s;
+    max-width: 800px;
+
+    .logo {
+      display: block;
+      width: 300px;
+      max-width: 100%;
+    }
+
+    .title {
+      font-family: 'Montserrat-Bold';
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.1;
+    }
+
+    .details {
+      display: flex;
+      gap: 20px;
+      font-family: 'Montserrat-Medium';
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    .description {
+      font-family: 'Montserrat-Regular';
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      .tag {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+      }
+    }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
   }
 
-  .season-tab.active {
-    background: #4f8cff;
+  .player-section {
+    width: 100%;
+    animation: fadeIn 0.5s ease;
   }
 
-  .episodes-title {
-    margin-top: 30px;
-    font-size: 20px;
-    font-weight: 600;
-  }
+  .series-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 
-  .episodes-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-  }
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      
+      h3 {
+        font-family: 'Montserrat-Bold';
+        font-size: 24px;
+        color: white;
+        margin: 0;
+      }
+    }
 
-  .episode-card {
-    background: #111827;
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: 0.2s;
-  }
+    .episodes-header {
+      margin-top: 10px;
+      
+      .episodes-title-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        
+        h4 {
+          font-family: 'Montserrat-Bold';
+          font-size: 20px;
+          color: white;
+          margin: 0;
+        }
+        
+        .check-whole-season {
+          font-size: 14px;
+          color: #4a9eff;
+          cursor: pointer;
+          opacity: 0.9;
+          transition: opacity 0.2s;
+          
+          &:hover {
+            opacity: 1;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
 
-  .episode-card:hover {
-    transform: translateY(-5px);
-  }
+    .episodes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
 
-  .episode-image {
-    height: 180px;
-    background-size: cover;
-    background-position: center;
-  }
+      .episode-card {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        border: 1px solid transparent;
+        padding: 12px;
 
-  .episode-content {
-    padding: 15px;
-  }
+        &:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.1);
+        }
 
-  .episode-name {
-    font-size: 16px;
-    font-weight: 600;
-  }
+        &.active {
+          border-color: #4a9eff;
+          background: rgba(74, 158, 255, 0.1);
+        }
 
-  .episode-meta {
-    font-size: 13px;
-    opacity: 0.7;
-    margin: 5px 0 10px;
-  }
+        .ep-thumbnail {
+          width: 180px;
+          height: 100px;
+          flex-shrink: 0;
+          background-size: cover;
+          background-position: center;
+          background-color: rgba(255, 255, 255, 0.1);
+          position: relative;
+          border-radius: 8px;
 
-  .episode-description {
-    font-size: 14px;
-    opacity: 0.85;
+          .ep-number {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+        }
+
+        .ep-info {
+          flex-grow: 1;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          color: white;
+
+          .ep-name {
+            font-family: 'Montserrat-SemiBold';
+            font-size: 16px;
+            margin: 0;
+            white-space: normal;
+            line-height: 1.4;
+            
+            .ep-number-title {
+              color: #fff;
+            }
+          }
+
+          .ep-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #aaa;
+            
+            .ep-aired, .ep-runtime {
+              display: flex;
+              align-items: center;
+              
+              &:before {
+                content: '';
+                display: inline-block;
+                width: 4px;
+                height: 4px;
+                background: #4a9eff;
+                border-radius: 50%;
+                margin-right: 8px;
+              }
+            }
+          }
+
+          .ep-description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
   }
 }
 
-@media (max-width: 1024px) {
-  .episodes-grid {
-    grid-template-columns: repeat(2, 1fr);
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
   }
 }
 
 @media (max-width: 768px) {
-  .episodes-grid {
-    grid-template-columns: 1fr;
+  .stream {
+    padding: 20px 15px;
+    
+    .meta .actions {
+      flex-direction: column;
+    }
+    
+    .series-navigation {
+      .episodes-grid {
+        .episode-card {
+          flex-direction: column;
+          padding: 10px;
+          
+          .ep-thumbnail {
+            width: 100%;
+            height: 140px;
+          }
+          
+          .ep-info {
+            .ep-meta {
+              flex-wrap: wrap;
+              gap: 12px;
+            }
+          }
+        }
+      }
+      
+      .episodes-header {
+        .episodes-title-wrapper {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stream {
+    .series-navigation {
+      .episodes-grid {
+        .episode-card {
+          .ep-info {
+            .ep-description {
+              -webkit-line-clamp: 3;
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>
