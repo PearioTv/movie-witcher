@@ -24,25 +24,38 @@
           </div>
         </div>
 
-        <!-- الأزرار المعدلة - مصغرة وبدون "Watch" في التريلر -->
+        <!-- الأزرار المعدلة - مصغرة -->
         <div class="actions">
           <Button @click="openPlayer" icon="play-circle-outline">
             {{ t('views.stream.watch') }}
           </Button>
-          <Button v-if="meta.trailers && meta.trailers.length" type="secondary" @click="openTrailer" icon="videocam-outline">
+          <Button v-if="meta.trailers && meta.trailers.length" type="secondary" @click="openTrailerInPopup" icon="videocam-outline">
             {{ t('views.stream.trailer') }}
           </Button>
         </div>
       </div>
 
-      <!-- Popup للاعب الفيديو -->
+      <!-- Popup للاعب الفيديو (للمشغل الرئيسي أو التريلر) -->
       <Popup 
         v-model="showPlayer" 
         size="cinema"
         @close="handlePlayerClose"
       >
-        <!-- نمرر جميع الخصائص بشكل صحيح -->
+        <!-- عرض التريلر إذا كان موجوداً -->
+        <div v-if="isTrailerMode" class="trailer-container">
+          <iframe
+            v-if="trailerUrl"
+            :src="trailerUrl"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            class="trailer-iframe"
+          ></iframe>
+        </div>
+        
+        <!-- عرض المشغل الرئيسي -->
         <VidfastPlayer 
+          v-else
           :type="meta.type" 
           :id="meta.imdb_id" 
           :season="selectedSeason" 
@@ -119,6 +132,8 @@ const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 const playerReady = ref(false);
+const isTrailerMode = ref(false);
+const trailerUrl = ref('');
 
 const isSeries = computed(() => meta.value && meta.value.type === 'series');
 const episodes = computed(() => {
@@ -176,19 +191,44 @@ const formatRuntime = (minutes) => {
   return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 };
 
-const openTrailer = () => {
+// فتح التريلر في البوب أب
+const openTrailerInPopup = () => {
   if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
-    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, '_blank');
+    
+    // تحديد نوع المصدر (YouTube أو غيره)
+    if (trailer.source.includes('youtube') || trailer.source.includes('youtu.be')) {
+      // استخراج معرف اليوتيوب
+      let videoId = trailer.source;
+      if (trailer.source.includes('youtube.com/watch?v=')) {
+        videoId = trailer.source.split('v=')[1]?.split('&')[0];
+      } else if (trailer.source.includes('youtu.be/')) {
+        videoId = trailer.source.split('youtu.be/')[1]?.split('?')[0];
+      }
+      
+      if (videoId) {
+        trailerUrl.value = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      }
+    } else {
+      // إذا كان رابط مباشر
+      trailerUrl.value = trailer.source;
+    }
+    
+    isTrailerMode.value = true;
+    showPlayer.value = true;
   }
 };
 
 const openPlayer = () => {
+  isTrailerMode.value = false;
+  trailerUrl.value = '';
   showPlayer.value = true;
 };
 
 const handlePlayerClose = () => {
   showPlayer.value = false;
+  isTrailerMode.value = false;
+  trailerUrl.value = '';
   playerReady.value = false;
 };
 
@@ -479,6 +519,19 @@ onMounted(async () => {
         }
       }
     }
+  }
+}
+
+// تنسيق حاوية التريلر
+.trailer-container {
+  width: 100%;
+  height: 100%;
+  background: black;
+  
+  .trailer-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
   }
 }
 
