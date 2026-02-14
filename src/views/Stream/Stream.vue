@@ -41,19 +41,15 @@
         size="full"
         @close="handlePlayerClose"
       >
-        <!-- نمرر جميع الخصائص المطلوبة للمشغل -->
+        <!-- نمرر جميع الخصائص بشكل صحيح -->
         <VidfastPlayer 
           :type="meta.type" 
           :id="meta.imdb_id" 
           :season="selectedSeason" 
           :episode="selectedEpisodeNumber"
-          :show-controls="true"
-          :show-quality-selector="true"
-          :show-subtitle-selector="true"
-          :auto-play="true"
-          @play="handleVideoPlay"
-          @pause="handleVideoPause"
-          @ended="handleVideoEnded"
+          :config="playerConfig"
+          @ready="handlePlayerReady"
+          @error="handlePlayerError"
         />
       </Popup>
 
@@ -122,6 +118,7 @@ const seasons = ref([]);
 const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 const showPlayer = ref(false);
+const playerReady = ref(false);
 
 const isSeries = computed(() => meta.value && meta.value.type === 'series');
 const episodes = computed(() => {
@@ -134,6 +131,17 @@ const episodes = computed(() => {
 const selectedEpisodeNumber = computed(() => {
   return selectedEpisode.value ? selectedEpisode.value.episode : 1;
 });
+
+// تهيئة إعدادات المشغل
+const playerConfig = computed(() => ({
+  controls: true,
+  autoplay: true,
+  qualitySelector: true,
+  subtitleSelector: true,
+  playbackRate: true,
+  theaterMode: true,
+  // يمكنك إضافة المزيد من الإعدادات هنا حسب احتياجك
+}));
 
 // دالة تنسيق التاريخ
 const formatDate = (dateString) => {
@@ -167,18 +175,16 @@ const openPlayer = () => {
 
 const handlePlayerClose = () => {
   showPlayer.value = false;
+  playerReady.value = false;
 };
 
-const handleVideoPlay = () => {
-  console.log('Video started playing');
+const handlePlayerReady = () => {
+  playerReady.value = true;
+  console.log('Player is ready');
 };
 
-const handleVideoPause = () => {
-  console.log('Video paused');
-};
-
-const handleVideoEnded = () => {
-  console.log('Video ended');
+const handlePlayerError = (error) => {
+  console.error('Player error:', error);
 };
 
 const selectEpisode = (ep) => {
