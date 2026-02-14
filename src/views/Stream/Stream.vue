@@ -97,9 +97,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue'; // تم إزالة 'watch' غير المستخدم
 import { useI18n } from 'vue-i18n';
-import store from '@/store';
+// تم إزالة 'store' غير المستخدم
 import router from '@/router';
 import StremioService from "@/services/stremio.service";
 import Button from '@/components/ui/Button.vue';
@@ -108,7 +108,7 @@ import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
 
 const { t } = useI18n();
 
-const loading = ref(false);
+// تم إزالة متغير 'loading' غير المستخدم
 const meta = ref({});
 const seasons = ref([]);
 const selectedSeason = ref(1);
