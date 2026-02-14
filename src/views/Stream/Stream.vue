@@ -41,11 +41,16 @@
         size="full"
         @close="handlePlayerClose"
       >
+        <!-- نمرر جميع الخصائص المطلوبة للمشغل -->
         <VidfastPlayer 
           :type="meta.type" 
           :id="meta.imdb_id" 
           :season="selectedSeason" 
           :episode="selectedEpisodeNumber"
+          :show-controls="true"
+          :show-quality-selector="true"
+          :show-subtitle-selector="true"
+          :auto-play="true"
           @play="handleVideoPlay"
           @pause="handleVideoPause"
           @ended="handleVideoEnded"
@@ -174,8 +179,6 @@ const handleVideoPause = () => {
 
 const handleVideoEnded = () => {
   console.log('Video ended');
-  // يمكنك إغلاق البوب أب تلقائياً عند انتهاء الفيديو إذا أردت
-  // showPlayer.value = false;
 };
 
 const selectEpisode = (ep) => {
