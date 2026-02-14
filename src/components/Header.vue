@@ -116,7 +116,7 @@ header {
             }
 
             .witcher {
-                margin-left: 8px; /* مسافة ثابتة بين الكلمتين */
+                margin-left: 8px;
                 color: white;
             }
         }
