@@ -12,7 +12,16 @@
             </router-link>
 
             <div class="version">
-                {{ appVersion }}
+                <span class="app-version">{{ appVersion }}</span>
+
+                <a 
+                    href="https://t.me/MWitcherr" 
+                    target="_blank"
+                    class="telegram-button"
+                >
+                    <ion-icon name="paper-plane"></ion-icon>
+                    <span class="tooltip">Join our Telegram</span>
+                </a>
             </div>
         </div>
 
@@ -81,7 +90,7 @@ header {
     .container {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
 
         .history-back {
             display: flex;
@@ -101,11 +110,9 @@ header {
         }
 
         .logo {
-            text-decoration: none;
-            user-select: none;
-            vertical-align: middle;
             display: flex;
             align-items: center;
+            text-decoration: none;
 
             .logo-text {
                 font-family: 'Anton', sans-serif;
@@ -122,10 +129,55 @@ header {
         }
 
         .version {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-version {
             font-family: 'Montserrat-SemiBold';
             font-size: 15px;
             color: $text-color;
-            opacity: 0.3;
+            opacity: 0.4;
+        }
+
+        .telegram-button {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2AABEE, #229ED9);
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 0 12px rgba(42, 171, 238, 0.6);
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
+
+        .telegram-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 0 22px rgba(42, 171, 238, 0.95);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: -38px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .telegram-button:hover .tooltip {
+            opacity: 1;
         }
     }
 }
@@ -140,10 +192,8 @@ header {
         .container {
             gap: 15px;
 
-            .logo {
-                .logo-text {
-                    font-size: 32px;
-                }
+            .logo-text {
+                font-size: 32px;
             }
         }
     }
