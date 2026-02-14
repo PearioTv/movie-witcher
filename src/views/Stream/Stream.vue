@@ -38,7 +38,7 @@
       <!-- Popup للاعب الفيديو -->
       <Popup 
         v-model="showPlayer" 
-        size="full"
+        size="cinema"
         @close="handlePlayerClose"
       >
         <!-- نمرر جميع الخصائص بشكل صحيح -->
@@ -140,7 +140,21 @@ const playerConfig = computed(() => ({
   subtitleSelector: true,
   playbackRate: true,
   theaterMode: true,
-  // يمكنك إضافة المزيد من الإعدادات هنا حسب احتياجك
+  // إعدادات إضافية لتحسين التجربة
+  responsive: true,
+  fluid: true,
+  aspectRatio: '16:9',
+  // إعدادات الترجمة
+  subtitles: {
+    enabled: true,
+    language: 'ar',
+    languages: ['ar', 'en', 'fr']
+  },
+  // إعدادات الجودة
+  quality: {
+    default: '1080p',
+    options: ['2160p', '1080p', '720p', '480p', '360p']
+  }
 }));
 
 // دالة تنسيق التاريخ
