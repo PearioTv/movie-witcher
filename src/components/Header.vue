@@ -7,7 +7,7 @@
 
             <router-link class="logo" to="/">
                 <span class="logo-text">
-                    Movie<span>Witcher</span>
+                    Movie <span>Witcher</span>
                 </span>
             </router-link>
 
