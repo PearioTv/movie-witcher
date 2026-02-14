@@ -2,24 +2,18 @@
   <div class="stream">
     <div class="background">
       <div class="blur"></div>
-      <div
-        class="image"
-        :style="`background-image: url(${meta.background})`"
-        v-if="meta && meta.background"
-      ></div>
+      <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
     </div>
 
     <div class="content-container">
       <div class="meta" v-if="meta">
-        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo" />
+        <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
         <div class="title" v-else>{{ meta.name }}</div>
 
         <div class="details">
           <div class="year">{{ meta.year }}</div>
           <div class="runtime">{{ meta.runtime }}</div>
-          <div class="rating" v-if="meta.imdbRating">
-            ⭐ {{ meta.imdbRating }}
-          </div>
+          <div class="rating" v-if="meta.imdbRating">⭐ {{ meta.imdbRating }}</div>
         </div>
 
         <div class="description">{{ meta.description }}</div>
@@ -30,165 +24,470 @@
           </div>
         </div>
 
+        <!-- الأزرار المعدلة - مصغرة وبدون "Watch" في التريلر -->
         <div class="actions">
-          <Button @click="openPlayer" icon="play-circle-outline">
+          <Button @click="showPlayer = true" icon="play-circle-outline">
             {{ t('views.stream.watch') }}
           </Button>
-
-          <Button
-            v-if="meta.trailers && meta.trailers.length"
-            type="secondary"
-            @click="openTrailer"
-            icon="videocam-outline"
-          >
+          <Button v-if="meta.trailers && meta.trailers.length" type="secondary" @click="openTrailer" icon="videocam-outline">
             {{ t('views.stream.trailer') }}
           </Button>
         </div>
       </div>
-    </div>
 
-    <!-- 🎬 POPUP PLAYER -->
-    <transition name="popup">
-      <div
-        v-if="showPlayer"
-        class="player-overlay"
-        @click.self="closePlayer"
-      >
-        <div class="player-modal">
-          <span class="close-btn" @click="closePlayer">✕</span>
+      <div class="player-section" v-if="showPlayer">
+        <VidfastPlayer 
+          :type="meta.type" 
+          :id="meta.imdb_id" 
+          :season="selectedSeason" 
+          :episode="selectedEpisodeNumber"
+        />
+      </div>
 
-          <VidfastPlayer
-            :type="meta.type"
-            :id="meta.imdb_id"
-            :season="1"
-            :episode="1"
-          />
+      <!-- قسم المسلسل المعدل - بدون عناوين إضافية -->
+      <div class="series-navigation" v-if="isSeries">
+        <!-- أزرار المواسم فقط بدون عنوان Seasons -->
+        <Segments :segments="seasons" v-model="selectedSeason">
+          <template #segment="{ segment }">
+            <span>{{ t('views.stream.season') || 'Season' }} {{ segment }}</span>
+          </template>
+        </Segments>
+
+        <!-- عنوان الحلقات المبسط - فقط Episodes -->
+        <div class="episodes-header">
+          <h4>{{ t('') || 'Episodes' }}</h4>
+        </div>
+
+        <!-- شبكة الحلقات -->
+        <div class="episodes-grid">
+          <div 
+            v-for="ep in episodes" 
+            :key="ep.id" 
+            class="episode-card"
+            :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
+            @click="selectEpisode(ep)"
+          >
+            <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
+              <div class="ep-number">{{ ep.episode }}</div>
+            </div>
+            
+            <div class="ep-info">
+              <div class="ep-name">
+                <span class="ep-number-title">{{ ep.episode }}. {{ ep.name || `${t('views.stream.episode') || 'Episode'} ${ep.episode}` }}</span>
+              </div>
+              
+              <div class="ep-meta">
+                <span class="ep-aired" v-if="ep.released">{{ formatDate(ep.released) }}</span>
+                <span class="ep-runtime" v-if="ep.runtime">{{ formatRuntime(ep.runtime) }}</span>
+              </div>
+              
+              <div class="ep-description" v-if="ep.description">
+                {{ ep.description }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </transition>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
-import router from "@/router";
+import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import router from '@/router';
 import StremioService from "@/services/stremio.service";
-import Button from "@/components/ui/Button.vue";
-import VidfastPlayer from "@/components/player/VidfastPlayer.vue";
+import Button from '@/components/ui/Button.vue';
+import Segments from '@/components/ui/Segments.vue';
+import VidfastPlayer from '@/components/player/VidfastPlayer.vue';
 
 const { t } = useI18n();
 
 const meta = ref({});
+const seasons = ref([]);
+const selectedSeason = ref(1);
+const selectedEpisode = ref(null);
 const showPlayer = ref(false);
 
-const openPlayer = () => {
-  showPlayer.value = true;
-  document.body.style.overflow = "hidden";
+const isSeries = computed(() => meta.value && meta.value.type === 'series');
+const episodes = computed(() => {
+  if (!meta.value || !meta.value.videos) return [];
+  return meta.value.videos
+    .filter((video) => video.season === selectedSeason.value)
+    .sort((a, b) => a.episode - b.episode);
+});
+
+const selectedEpisodeNumber = computed(() => {
+  return selectedEpisode.value ? selectedEpisode.value.episode : 1;
+});
+
+// دالة تنسيق التاريخ
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
 };
 
-const closePlayer = () => {
-  showPlayer.value = false;
-  document.body.style.overflow = "auto";
-};
-
-const handleEsc = (e) => {
-  if (e.key === "Escape") closePlayer();
+// دالة تنسيق مدة العرض
+const formatRuntime = (minutes) => {
+  if (!minutes) return '';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 };
 
 const openTrailer = () => {
   if (meta.value.trailers && meta.value.trailers.length) {
     const trailer = meta.value.trailers[0];
-    window.open(
-      `https://www.youtube.com/watch?v=${trailer.source}`,
-      "_blank"
-    );
+    window.open(`https://www.youtube.com/watch?v=${trailer.source}`, '_blank');
   }
 };
 
-onMounted(async () => {
-  window.addEventListener("keydown", handleEsc);
+const selectEpisode = (ep) => {
+  selectedEpisode.value = ep;
+  showPlayer.value = true;
+  router.replace({ params: { ...router.currentRoute.value.params, id: ep.id } });
+};
 
+onMounted(async () => {
   const { type, id } = router.currentRoute.value.params;
 
   if (id && type) {
-    const [metaId] = id.split(":");
-    meta.value =
-      type === "movie"
-        ? await StremioService.getMetaMovie(metaId)
-        : await StremioService.getMetaSeries(metaId);
-  }
-});
+    const [metaId] = id.split(':');
+    meta.value = type === 'movie' ? await StremioService.getMetaMovie(metaId) : await StremioService.getMetaSeries(metaId);
 
-onUnmounted(() => {
-  window.removeEventListener("keydown", handleEsc);
+    if (meta.value && meta.value.videos && meta.value.videos.length) {
+      const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
+      selectedSeason.value = episode.season || 1;
+      selectedEpisode.value = episode;
+
+      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
+        .filter(s => s > 0)
+        .sort((a, b) => a - b);
+    }
+  }
 });
 </script>
 
 <style lang="scss" scoped>
 .stream {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   padding: 40px 5%;
-  color: white;
-}
 
-.player-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.93);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 40px;
-}
+  .background {
+    z-index: -1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 
-.player-modal {
-  position: relative;
-  width: 95%;
-  max-width: 1300px;
-  aspect-ratio: 16 / 9;
-  background: black;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 0 70px rgba(0, 0, 0, 0.9);
-  animation: popupIn 0.35s ease;
-}
+    .blur, .image {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
 
-.close-btn {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 28px;
-  color: white;
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.2s ease;
-}
+    .blur {
+      z-index: 1;
+      backdrop-filter: blur(60px);
+      background-color: rgba(0, 0, 0, 0.7);
+    }
 
-.close-btn:hover {
-  transform: scale(1.2);
-}
-
-.popup-enter-active,
-.popup-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.popup-enter-from,
-.popup-leave-to {
-  opacity: 0;
-}
-
-@keyframes popupIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
+    .image {
+      background-size: cover;
+      background-position: center;
+    }
   }
-  to {
-    transform: scale(1);
-    opacity: 1;
+
+  .content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: white;
+    max-width: 800px;
+
+    .logo {
+      display: block;
+      width: 300px;
+      max-width: 100%;
+    }
+
+    .title {
+      font-family: 'Montserrat-Bold';
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.1;
+    }
+
+    .details {
+      display: flex;
+      gap: 20px;
+      font-family: 'Montserrat-Medium';
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    .description {
+      font-family: 'Montserrat-Regular';
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      .tag {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+      }
+    }
+
+    // الأزرار المعدلة - مصغرة
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      
+      :deep(button) {
+        padding: 8px 20px;
+        font-size: 14px;
+        min-width: auto;
+        
+        .icon {
+          font-size: 18px;
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+
+  .player-section {
+    width: 100%;
+    animation: fadeIn 0.5s ease;
+  }
+
+  // قسم المسلسل المعدل
+  .series-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    
+    // تنسيق أزرار المواسم
+    :deep(.segments) {
+      margin-top: 0;
+      
+      .segment-button {
+        padding: 6px 16px;
+        font-size: 14px;
+      }
+    }
+    
+    // عنوان الحلقات المبسط
+    .episodes-header {
+      margin-top: 10px;
+      
+      h4 {
+        font-family: 'Montserrat-Bold';
+        font-size: 18px;
+        color: white;
+        margin: 0 0 15px 0;
+        opacity: 0.9;
+      }
+    }
+
+    .episodes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      .episode-card {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        border: 1px solid transparent;
+        padding: 12px;
+
+        &:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &.active {
+          border-color: #4a9eff;
+          background: rgba(74, 158, 255, 0.1);
+        }
+
+        .ep-thumbnail {
+          width: 180px;
+          height: 100px;
+          flex-shrink: 0;
+          background-size: cover;
+          background-position: center;
+          background-color: rgba(255, 255, 255, 0.1);
+          position: relative;
+          border-radius: 8px;
+
+          .ep-number {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+        }
+
+        .ep-info {
+          flex-grow: 1;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          color: white;
+
+          .ep-name {
+            font-family: 'Montserrat-SemiBold';
+            font-size: 16px;
+            margin: 0;
+            white-space: normal;
+            line-height: 1.4;
+            
+            .ep-number-title {
+              color: #fff;
+            }
+          }
+
+          .ep-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #aaa;
+            
+            .ep-aired, .ep-runtime {
+              display: flex;
+              align-items: center;
+              
+              &:before {
+                content: '';
+                display: inline-block;
+                width: 4px;
+                height: 4px;
+                background: #4a9eff;
+                border-radius: 50%;
+                margin-right: 8px;
+              }
+            }
+          }
+
+          .ep-description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@media (max-width: 768px) {
+  .stream {
+    padding: 20px 15px;
+    
+    .meta {
+      .actions {
+        flex-direction: row;
+        justify-content: flex-start;
+        
+        :deep(button) {
+          flex: 0 1 auto;
+        }
+      }
+    }
+    
+    .series-navigation {
+      .episodes-grid {
+        .episode-card {
+          flex-direction: column;
+          padding: 10px;
+          
+          .ep-thumbnail {
+            width: 100%;
+            height: 140px;
+          }
+          
+          .ep-info {
+            .ep-meta {
+              flex-wrap: wrap;
+              gap: 12px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stream {
+    .series-navigation {
+      .episodes-grid {
+        .episode-card {
+          .ep-info {
+            .ep-description {
+              -webkit-line-clamp: 3;
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>
