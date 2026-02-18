@@ -1,0 +1,77 @@
+{
+    "views": {
+        "home": {
+            "title": "Movie Witcher",
+            "sub": "Watch your favorite movies and series with ease.",
+            "button": "Get Started"
+        },
+        "search": {
+            "title": "Search",
+            "sub": "Find something you'd like to watch!",
+            "segments": {
+                "movies": "Movies",
+                "series": "Series"
+            }
+        },
+        "stream": {
+            "season": "Season",
+            "episode": "Episode",
+            "misc": "Miscellaneous",
+            "all": "All",
+            "watch": "Watch Now",
+            "trailer": "Watch Trailer",
+            "streams": {
+                "title": "Available Sources",
+                "error": "No sources available",
+                "button": "Settings"
+            }
+        }
+    },
+    "components": {
+        "player": {
+            "ready": "READY",
+            "autoSync": "Auto-Sync",
+            "subtitle": "Subtitle",
+            "share": "Share this link with your friends:"
+        },
+        "settings": {
+            "title": "Settings",
+            "lang": "Language",
+            "support": "Support",
+            "links": {
+                "title": "Links",
+                "report": "Report an issue"
+            },
+            "button": "Done"
+        }
+    },
+    "errors": {
+        "server": {
+            "title": "Unable to reach the server",
+            "message": "Come back in a little while ..."
+        },
+        "stremio": {
+            "title": "Failed to load media data",
+            "message": "Please check your connection or try again later."
+        },
+        "room": {
+            "title": "This room does not exists",
+            "message": "Be sure that the room is still active."
+        },
+        "cooldown": {
+            "title": "It's going too fast !",
+            "message": "Wait a few moment before retrying."
+        }
+    },
+    "loading": {
+        "room": {
+            "title": "Loading",
+            "message": "It can take some times."
+        }
+    },
+    "toasts": {
+        "clipboard": "Copied to your clipboard !",
+        "hlsStream": "Switched to HLS stream",
+        "sourceStream": "Switched to Source stream"
+    }
+}
