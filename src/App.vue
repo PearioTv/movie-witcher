@@ -59,39 +59,48 @@ useMeta({
 <style lang="scss">
 @import './assets/styles/main.scss';
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
 #app {
     min-height: 100%;
+    width: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-$padding: 25px;
-
 .view-container {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     top: $header-height-mobile;
-    height: calc(100vh - #{$header-height-mobile});
     width: 100%;
+    min-height: calc(100vh - #{$header-height-mobile});
     overflow-y: auto;
+    overflow-x: hidden;
 
     .inner {
-        max-width: 100vw;
-        margin: auto;
-        padding: 0 $padding;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 }
 
 @media only screen and (min-width: 768px) and (min-height: 768px) {
     .view-container {
-        overflow-y: auto;
         top: $header-height;
-        height: calc(100vh - #{$header-height});
+        min-height: calc(100vh - #{$header-height});
 
         .inner {
-            width: $inner-width;
+            width: 100%;
+            max-width: 100%;
             padding: 0;
         }
     }
