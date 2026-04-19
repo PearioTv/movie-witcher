@@ -302,13 +302,17 @@ $muted:    rgba(255,255,255,0.45);
 $card-w:   148px;
 $card-r:   8px;
 
-// ── Root ─────────────────────────────────────────────────────────────────────
 .home {
   background: $bg;
   color: #fff;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
   font-family: 'Montserrat-Regular', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 // ══════════════════════════════════ HERO ═════════════════════════════════════
