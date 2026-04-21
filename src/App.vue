@@ -58,6 +58,7 @@ useMeta({
 
 <style lang="scss">
 @import './assets/styles/main.scss';
+@import './assets/styles/variables.scss';
 
 #app {
     min-height: 100%;
@@ -65,7 +66,10 @@ useMeta({
     -moz-osx-font-smoothing: grayscale;
 }
 
-$padding: 25px;
+// متغيرات الحشو (Padding) للأجهزة المختلفة
+$padding-mobile: 12px;
+$padding-tablet: 20px;
+$padding-desktop: 25px;
 
 .view-container {
     position: relative;
@@ -76,14 +80,28 @@ $padding: 25px;
     height: calc(100vh - #{$header-height-mobile});
     width: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
 
     .inner {
-        max-width: 100vw;
+        width: 100%;
+        max-width: 100%;
         margin: auto;
-        padding: 0 $padding;
+        padding: 0 $padding-mobile;
+        box-sizing: border-box;
     }
 }
 
+// للشاشات الصغيرة (480px وما فوق)
+@media only screen and (min-width: 480px) {
+    .view-container {
+        .inner {
+            padding: 0 $padding-tablet;
+        }
+    }
+}
+
+// للأجهزة اللوحية والحواسيب (768px وما فوق)
 @media only screen and (min-width: 768px) and (min-height: 768px) {
     .view-container {
         overflow-y: auto;
@@ -93,6 +111,16 @@ $padding: 25px;
         .inner {
             width: $inner-width;
             padding: 0;
+        }
+    }
+}
+
+// للحواسيب الكبيرة (1024px وما فوق)
+@media only screen and (min-width: 1024px) {
+    .view-container {
+        .inner {
+            width: 90%;
+            max-width: $inner-width;
         }
     }
 }
