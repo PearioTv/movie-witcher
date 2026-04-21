@@ -311,11 +311,14 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/variables.scss';
+
 .stream {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 40px 5%;
+  padding: 20px 5%;
+  gap: 30px;
 
   .background {
     z-index: -1;
@@ -349,69 +352,74 @@ onMounted(async () => {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 30px;
   }
 
   .meta {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     color: white;
-    max-width: 800px;
+    max-width: 100%;
 
     .logo {
       display: block;
-      width: 300px;
-      max-width: 100%;
+      width: 100%;
+      max-width: 280px;
+      height: auto;
     }
 
     .title {
       font-family: 'Montserrat-Bold';
-      font-size: clamp(32px, 5vw, 56px);
+      font-size: clamp(24px, 6vw, 56px);
       line-height: 1.1;
+      margin: 0;
     }
 
     .details {
       display: flex;
-      gap: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
       font-family: 'Montserrat-Medium';
-      font-size: 16px;
+      font-size: clamp(12px, 3vw, 16px);
       opacity: 0.8;
     }
 
     .description {
       font-family: 'Montserrat-Regular';
-      font-size: 18px;
+      font-size: clamp(14px, 3vw, 18px);
       line-height: 1.6;
       opacity: 0.9;
+      max-width: 100%;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
 
       .tag {
         background: rgba(255, 255, 255, 0.1);
-        padding: 6px 16px;
+        padding: 4px 12px;
         border-radius: 20px;
-        font-size: 14px;
+        font-size: clamp(11px, 2vw, 14px);
       }
     }
 
     // الأزرار المعدلة - مصغرة
     .actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       margin-top: 10px;
+      flex-wrap: wrap;
       
       :deep(button) {
-        padding: 8px 20px;
-        font-size: 14px;
+        padding: 8px 16px;
+        font-size: clamp(12px, 2vw, 14px);
         min-width: auto;
         
         .icon {
-          font-size: 18px;
+          font-size: clamp(14px, 3vw, 18px);
           margin-right: 6px;
         }
       }
@@ -422,27 +430,27 @@ onMounted(async () => {
   .series-navigation {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
     
     // تنسيق أزرار المواسم
     :deep(.segments) {
       margin-top: 0;
       
       .segment-button {
-        padding: 6px 16px;
-        font-size: 14px;
+        padding: 6px 12px;
+        font-size: clamp(12px, 2vw, 14px);
       }
     }
     
     // عنوان الحلقات المبسط
     .episodes-header {
-      margin-top: 10px;
+      margin-top: 0;
       
       h4 {
         font-family: 'Montserrat-Bold';
-        font-size: 18px;
+        font-size: clamp(14px, 3vw, 18px);
         color: white;
-        margin: 0 0 15px 0;
+        margin: 0 0 12px 0;
         opacity: 0.9;
       }
     }
@@ -450,20 +458,20 @@ onMounted(async () => {
     .episodes-grid {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 12px;
 
       .episode-card {
         display: flex;
         flex-direction: row;
         align-items: stretch;
-        gap: 20px;
+        gap: 12px;
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
+        border-radius: 8px;
         overflow: hidden;
         cursor: pointer;
         transition: transform 0.2s, background 0.2s;
         border: 1px solid transparent;
-        padding: 12px;
+        padding: 8px;
 
         &:hover {
           transform: translateY(-2px);
@@ -476,23 +484,23 @@ onMounted(async () => {
         }
 
         .ep-thumbnail {
-          width: 180px;
-          height: 100px;
+          width: 120px;
+          height: 70px;
           flex-shrink: 0;
           background-size: cover;
           background-position: center;
           background-color: rgba(255, 255, 255, 0.1);
           position: relative;
-          border-radius: 8px;
+          border-radius: 6px;
 
           .ep-number {
             position: absolute;
-            bottom: 8px;
-            right: 8px;
+            bottom: 4px;
+            right: 4px;
             background: rgba(0, 0, 0, 0.8);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 13px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
             font-weight: bold;
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -504,15 +512,21 @@ onMounted(async () => {
           padding: 0;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 4px;
           color: white;
+          min-width: 0;
 
           .ep-name {
             font-family: 'Montserrat-SemiBold';
-            font-size: 16px;
+            font-size: clamp(12px, 2vw, 16px);
             margin: 0;
             white-space: normal;
-            line-height: 1.4;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
             
             .ep-number-title {
               color: #fff;
@@ -521,9 +535,10 @@ onMounted(async () => {
 
           .ep-meta {
             display: flex;
-            gap: 20px;
-            font-size: 13px;
+            gap: 12px;
+            font-size: clamp(10px, 2vw, 13px);
             color: #aaa;
+            flex-wrap: wrap;
             
             .ep-aired, .ep-runtime {
               display: flex;
@@ -532,22 +547,22 @@ onMounted(async () => {
               &:before {
                 content: '';
                 display: inline-block;
-                width: 4px;
-                height: 4px;
+                width: 3px;
+                height: 3px;
                 background: #4a9eff;
                 border-radius: 50%;
-                margin-right: 8px;
+                margin-right: 6px;
               }
             }
           }
 
           .ep-description {
-            font-size: 14px;
-            line-height: 1.5;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: clamp(11px, 2vw, 14px);
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.6);
             margin: 0;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -576,7 +591,7 @@ onMounted(async () => {
   .trailer-error {
     color: white;
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
     padding: 20px;
   }
 }
@@ -592,36 +607,152 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 768px) {
+// للشاشات الصغيرة جداً (320px - 479px)
+@media (max-width: 479px) {
   .stream {
-    padding: 20px 15px;
-    
+    padding: 15px 8%;
+    gap: 20px;
+
     .meta {
+      gap: 12px;
+
+      .logo {
+        max-width: 200px;
+      }
+
       .actions {
-        flex-direction: row;
-        justify-content: flex-start;
-        
+        gap: 8px;
+
         :deep(button) {
-          flex: 0 1 auto;
+          padding: 6px 12px;
+          font-size: 11px;
+
+          .icon {
+            font-size: 13px;
+          }
         }
       }
     }
-    
+
     .series-navigation {
+      gap: 15px;
+
       .episodes-grid {
+        gap: 10px;
+
         .episode-card {
-          flex-direction: column;
-          padding: 10px;
-          
+          gap: 10px;
+          padding: 6px;
+
           .ep-thumbnail {
-            width: 100%;
-            height: 140px;
+            width: 100px;
+            height: 60px;
           }
-          
+
           .ep-info {
-            .ep-meta {
-              flex-wrap: wrap;
-              gap: 12px;
+            gap: 3px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// للشاشات الصغيرة (480px - 767px)
+@media (min-width: 480px) and (max-width: 767px) {
+  .stream {
+    padding: 18px 5%;
+    gap: 25px;
+
+    .meta {
+      gap: 14px;
+
+      .logo {
+        max-width: 250px;
+      }
+
+      .actions {
+        gap: 10px;
+
+        :deep(button) {
+          padding: 7px 14px;
+          font-size: 12px;
+
+          .icon {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+
+    .series-navigation {
+      gap: 18px;
+
+      .episodes-grid {
+        gap: 11px;
+
+        .episode-card {
+          gap: 11px;
+          padding: 7px;
+
+          .ep-thumbnail {
+            width: 110px;
+            height: 65px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// للأجهزة اللوحية والحواسيب (768px وما فوق)
+@media (min-width: 768px) {
+  .stream {
+    padding: 30px 5%;
+    gap: 40px;
+
+    .meta {
+      gap: 20px;
+      max-width: 800px;
+
+      .logo {
+        max-width: 300px;
+      }
+
+      .actions {
+        gap: 12px;
+
+        :deep(button) {
+          padding: 8px 20px;
+          font-size: 14px;
+
+          .icon {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+
+    .series-navigation {
+      gap: 30px;
+
+      .episodes-grid {
+        gap: 15px;
+
+        .episode-card {
+          gap: 20px;
+          padding: 12px;
+
+          .ep-thumbnail {
+            width: 180px;
+            height: 100px;
+          }
+
+          .ep-info {
+            gap: 8px;
+
+            .ep-description {
+              -webkit-line-clamp: 2;
             }
           }
         }
@@ -630,15 +761,29 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 480px) {
+// للحواسيب الكبيرة (1024px وما فوق)
+@media (min-width: 1024px) {
   .stream {
+    padding: 40px 5%;
+    gap: 50px;
+
+    .content-container {
+      gap: 50px;
+    }
+
     .series-navigation {
+      gap: 40px;
+
       .episodes-grid {
+        gap: 18px;
+
         .episode-card {
-          .ep-info {
-            .ep-description {
-              -webkit-line-clamp: 3;
-            }
+          gap: 25px;
+          padding: 15px;
+
+          .ep-thumbnail {
+            width: 200px;
+            height: 115px;
           }
         }
       }
