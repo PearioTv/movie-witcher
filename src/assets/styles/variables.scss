@@ -1,3 +1,4 @@
+// الألوان الأساسية
 $primary-color: #0b0913;
 $accent-color: #befdeb;
 $text-color: #FFFFFF;
@@ -5,8 +6,54 @@ $text-color: #FFFFFF;
 $danger-color: #e94848;
 $success-color: #64c72b;
 
+// الأبعاد والعروض
 $inner-width: 580px;
 $header-height: 75px;
 $header-height-mobile: 60px;
 $chat-width: 330px;
 $player-controls-height: 5rem;
+
+// نقاط التوقف (Breakpoints) للتجاوب
+$breakpoint-xs: 320px;   // هواتف صغيرة جداً
+$breakpoint-sm: 480px;   // هواتف
+$breakpoint-md: 768px;   // أجهزة لوحية
+$breakpoint-lg: 1024px;  // أجهزة لوحية كبيرة
+$breakpoint-xl: 1280px;  // حواسيب
+$breakpoint-2xl: 1536px; // حواسيب كبيرة
+
+// Mixins للاستجابة
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media only screen and (min-width: $breakpoint-xs) { @content; }
+  }
+  @else if $breakpoint == 'sm' {
+    @media only screen and (min-width: $breakpoint-sm) { @content; }
+  }
+  @else if $breakpoint == 'md' {
+    @media only screen and (min-width: $breakpoint-md) { @content; }
+  }
+  @else if $breakpoint == 'lg' {
+    @media only screen and (min-width: $breakpoint-lg) { @content; }
+  }
+  @else if $breakpoint == 'xl' {
+    @media only screen and (min-width: $breakpoint-xl) { @content; }
+  }
+  @else if $breakpoint == '2xl' {
+    @media only screen and (min-width: $breakpoint-2xl) { @content; }
+  }
+}
+
+// Mixin للشاشات الصغيرة جداً
+@mixin mobile-only {
+  @media only screen and (max-width: #{$breakpoint-sm - 1px}) { @content; }
+}
+
+// Mixin للشاشات المتوسطة وما فوقها
+@mixin tablet-and-up {
+  @media only screen and (min-width: $breakpoint-md) { @content; }
+}
+
+// Mixin للشاشات الكبيرة
+@mixin desktop-and-up {
+  @media only screen and (min-width: $breakpoint-lg) { @content; }
+}
