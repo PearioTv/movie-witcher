@@ -76,4 +76,34 @@ const embedUrl = computed(() => {
     font-family: 'Montserrat-Bold';
   }
 }
+
+// تحسين المشغل للهواتف
+@media (max-width: 768px) {
+  .vidfast-player {
+    aspect-ratio: auto;
+    height: 100%;
+    border-radius: 0;
+    
+    // التأكد من أن المشغل يأخذ كامل الارتفاع المتاح في البوب أب
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    iframe {
+      height: 100%;
+      max-height: 100vw * 0.5625; // الحفاظ على نسبة 16:9 كحد أقصى للارتفاع
+    }
+  }
+}
+
+// عند تدوير الهاتف للوضع الأفقي
+@media (max-width: 932px) and (orientation: landscape) {
+  .vidfast-player {
+    height: 100vh;
+    
+    iframe {
+      max-height: 100%;
+    }
+  }
+}
 </style>
