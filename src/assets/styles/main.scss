@@ -47,6 +47,7 @@
 
 html, body {
     height: 100%;
+    width: 100%;
 }
 
 body {
@@ -54,6 +55,9 @@ body {
     overflow: hidden;
     background-color: $primary-color;
     background: radial-gradient(circle, $primary-color 50%, black 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 ul {
