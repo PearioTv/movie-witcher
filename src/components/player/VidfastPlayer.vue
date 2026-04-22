@@ -39,11 +39,9 @@ const embedUrl = computed(() => {
 .vidfast-player {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   background: #000;
-  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 
   iframe {
     position: absolute;
@@ -57,18 +55,10 @@ const embedUrl = computed(() => {
 
 @media (max-width: 768px) {
   .vidfast-player {
+    // فرض نسبة العرض السينمائية لضمان ظهور شريط التحكم بالكامل
     aspect-ratio: 16 / 9;
     height: auto;
-    border-radius: 4px;
-  }
-}
-
-@media (max-width: 932px) and (orientation: landscape) {
-  .vidfast-player {
-    aspect-ratio: auto;
-    height: 100vh;
-    width: 100vw;
-    border-radius: 0;
+    max-height: 100vh;
   }
 }
 </style>
