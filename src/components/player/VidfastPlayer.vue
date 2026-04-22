@@ -18,34 +18,21 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  type: {
-    type: String,
-    required: true // 'movie' or 'series'
-  },
-  id: {
-    type: String,
-    required: true // IMDB or TMDB ID
-  },
-  season: {
-    type: [Number, String],
-    default: 1
-  },
-  episode: {
-    type: [Number, String],
-    default: 1
-  }
+  type: { type: String, required: true },
+  id: { type: String, required: true },
+  season: { type: [Number, String], default: 1 },
+  episode: { type: [Number, String], default: 1 }
 });
 
 const embedUrl = computed(() => {
   if (!props.id) return '';
-  
   if (props.type === 'movie') {
     return `https://vidfast.pro/movie/${props.id}?autoPlay=true`;
-  } else if (props.type === 'series') {
+  } else if (props.type === 'series' ) {
     return `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}?autoPlay=true&nextButton=true&autoNext=true`;
   }
   return '';
-});
+} );
 </script>
 
 <style lang="scss" scoped>
@@ -66,44 +53,22 @@ const embedUrl = computed(() => {
     height: 100%;
     border: none;
   }
-
-  .no-source {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #fff;
-    font-family: 'Montserrat-Bold';
-  }
 }
 
-// تحسين المشغل للهواتف
 @media (max-width: 768px) {
   .vidfast-player {
-    aspect-ratio: auto;
-    height: 100%;
-    border-radius: 0;
-    
-    // التأكد من أن المشغل يأخذ كامل الارتفاع المتاح في البوب أب
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    iframe {
-      height: 100%;
-      max-height: 100vw * 0.5625; // الحفاظ على نسبة 16:9 كحد أقصى للارتفاع
-    }
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: 4px;
   }
 }
 
-// عند تدوير الهاتف للوضع الأفقي
 @media (max-width: 932px) and (orientation: landscape) {
   .vidfast-player {
+    aspect-ratio: auto;
     height: 100vh;
-    
-    iframe {
-      max-height: 100%;
-    }
+    width: 100vw;
+    border-radius: 0;
   }
 }
 </style>
