@@ -129,13 +129,14 @@ onUnmounted(() => {
   &.cinema {
     max-width: 90%;
     width: 90%;
-    height: 90vh;
+    height: auto;
+    aspect-ratio: 16 / 9;
     
     .popup-content {
       height: 100%;
       padding: 0;
       
-      :deep(video) {
+      :deep(video), :deep(iframe) {
         width: 100%;
         height: 100%;
         object-fit: contain;
@@ -150,61 +151,6 @@ onUnmounted(() => {
   overflow: hidden;
   height: 100%;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  
-  :deep(.vidfast-player) {
-    width: 100%;
-    height: 100%;
-    
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    
-    // تكبير عناصر التحكم
-    .player-controls {
-      transform: scale(1.1);
-      transform-origin: bottom center;
-      
-      button {
-        padding: 12px;
-        
-        svg {
-          width: 24px;
-          height: 24px;
-        }
-      }
-      
-      .progress-bar {
-        height: 8px;
-        
-        .progress-handle {
-          width: 16px;
-          height: 16px;
-        }
-      }
-      
-      .time-display {
-        font-size: 15px;
-      }
-      
-      .volume-control {
-        .volume-slider {
-          width: 100px;
-          height: 6px;
-        }
-      }
-    }
-    
-    // تكبير قوائم الجودة والترجمة
-    .quality-menu, .subtitle-menu {
-      font-size: 15px;
-      
-      button {
-        padding: 10px 20px;
-      }
-    }
-  }
 }
 
 .popup-close {
@@ -265,6 +211,18 @@ onUnmounted(() => {
     &.cinema {
       width: 100%;
       height: 100vh;
+      max-height: 100vh;
+      aspect-ratio: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .popup-content {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        border-radius: 0;
+      }
     }
   }
   
@@ -274,6 +232,18 @@ onUnmounted(() => {
     width: 42px;
     height: 42px;
     background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+// وضع Landscape للهواتف
+@media (max-width: 932px) and (orientation: landscape) {
+  .popup-container.cinema {
+    height: 100vh;
+    
+    .popup-content {
+      height: 100vh;
+      aspect-ratio: auto;
+    }
   }
 }
 </style>
