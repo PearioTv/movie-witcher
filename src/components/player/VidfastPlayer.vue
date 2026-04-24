@@ -1,5 +1,5 @@
 <template>
-  <div class="vidfast-player-wrapper">
+  <div class="vidfast-player-container">
     <div class="vidfast-player">
       <iframe
         v-if="embedUrl"
@@ -9,69 +9,124 @@
         scrolling="no"
         allow="autoplay; fullscreen; chromecast; encrypted-media"
       ></iframe>
-      <div v-else class="no-source">No source available</div>
+      <div v-else class="no-source">
+        No source available
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+
 const props = defineProps({
-  type: { type: String, required: true },
-  id: { type: String, required: true },
-  season: { type: [Number, String], default: 1 },
-  episode: { type: [Number, String], default: 1 }
+  type: {
+    type: String,
+    required: true // 'movie' or 'series'
+  },
+  id: {
+    type: String,
+    required: true // IMDB or TMDB ID
+  },
+  season: {
+    type: [Number, String],
+    default: 1
+  },
+  episode: {
+    type: [Number, String],
+    default: 1
+  }
 });
 
 const embedUrl = computed(() => {
   if (!props.id) return '';
-  const baseUrl = props.type === 'movie' 
-    ? `https://vidfast.pro/movie/${props.id}` 
-    : `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}`;
-  return `${baseUrl}?autoPlay=true&nextButton=true`;
+  
+  if (props.type === 'movie') {
+    return `https://vidfast.pro/movie/${props.id}?autoPlay=true`;
+  } else if (props.type === 'series' ) {
+    return `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}?autoPlay=true&nextButton=true&autoNext=true`;
+  }
+  return '';
 } );
 </script>
 
 <style lang="scss" scoped>
-.vidfast-player-wrapper {
+.vidfast-player-container {
+  position: relative;
   width: 100%;
   background: #000;
-  position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vidfast-player {
   position: relative;
   width: 100%;
+  // نسبة 16:9 هي المفتاح لإظهار أدوات التحكم في المشغل الخارجي
   aspect-ratio: 16 / 9;
-  
+  background: #000;
+
   iframe {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    border: none;
-  }
-}
-
-// إجبار المشغل على الظهور بالعرض (Landscape) على الهواتف لضمان ظهور التحكم
-@media (max-width: 768px) and (orientation: portrait) {
-  .vidfast-player-wrapper {
-    height: 56.25vw; // الحفاظ على نسبة 16:9
-  }
-  
-  .vidfast-player {
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    border: none;
+  }
+
+  .no-source {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #fff;
+    font-family: 'Montserrat-Bold';
   }
 }
 
-// تحسين العرض في الوضع الأفقي الحقيقي
-@media (orientation: landscape) {
-  .vidfast-player-wrapper {
-    height: 100vh;
+// تحسينات خاصة للهواتف لضمان ظهور شريط التحكم بالكامل
+@media (max-width: 768px) {
+  .vidfast-player-container {
+    // في الوضع العمودي، نضمن أن المشغل يأخذ العرض الكامل مع ارتفاع مناسب
+    height: auto;
+    min-height: 210px; 
   }
+
+  .vidfast-player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    
+    iframe {
+      // التأكد من أن الـ iframe لا يتم قصه
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+// عند تدوير الهاتف للوضع الأفقي (Landscape)
+@media (max-height: 500px) or (orientation: landscape) {
+  .vidfast-player-container {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+  }
+
   .vidfast-player {
     height: 100%;
+    width: 100%;
     aspect-ratio: auto;
+    
+    iframe {
+      height: 100%;
+      width: 100%;
+    }
   }
 }
 </style>
