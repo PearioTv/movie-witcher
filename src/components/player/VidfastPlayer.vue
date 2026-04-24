@@ -1,22 +1,21 @@
 <template>
-  <div class="vidfast-player">
-    <iframe
-      v-if="embedUrl"
-      :src="embedUrl"
-      frameborder="0"
-      allowfullscreen
-      scrolling="no"
-      allow="autoplay; fullscreen; chromecast; encrypted-media"
-    ></iframe>
-    <div v-else class="no-source">
-      No source available
+  <div class="vidfast-player-wrapper">
+    <div class="vidfast-player">
+      <iframe
+        v-if="embedUrl"
+        :src="embedUrl"
+        frameborder="0"
+        allowfullscreen
+        scrolling="no"
+        allow="autoplay; fullscreen; chromecast; encrypted-media"
+      ></iframe>
+      <div v-else class="no-source">No source available</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-
 const props = defineProps({
   type: { type: String, required: true },
   id: { type: String, required: true },
@@ -26,39 +25,53 @@ const props = defineProps({
 
 const embedUrl = computed(() => {
   if (!props.id) return '';
-  if (props.type === 'movie') {
-    return `https://vidfast.pro/movie/${props.id}?autoPlay=true`;
-  } else if (props.type === 'series' ) {
-    return `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}?autoPlay=true&nextButton=true&autoNext=true`;
-  }
-  return '';
+  const baseUrl = props.type === 'movie' 
+    ? `https://vidfast.pro/movie/${props.id}` 
+    : `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}`;
+  return `${baseUrl}?autoPlay=true&nextButton=true`;
 } );
 </script>
 
 <style lang="scss" scoped>
+.vidfast-player-wrapper {
+  width: 100%;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
 .vidfast-player {
   position: relative;
   width: 100%;
-  height: 100%;
-  background: #000;
-  overflow: hidden;
-
+  aspect-ratio: 16 / 9;
+  
   iframe {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     border: none;
   }
 }
 
-@media (max-width: 768px) {
+// إجبار المشغل على الظهور بالعرض (Landscape) على الهواتف لضمان ظهور التحكم
+@media (max-width: 768px) and (orientation: portrait) {
+  .vidfast-player-wrapper {
+    height: 56.25vw; // الحفاظ على نسبة 16:9
+  }
+  
   .vidfast-player {
-    // فرض نسبة العرض السينمائية لضمان ظهور شريط التحكم بالكامل
-    aspect-ratio: 16 / 9;
-    height: auto;
-    max-height: 100vh;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// تحسين العرض في الوضع الأفقي الحقيقي
+@media (orientation: landscape) {
+  .vidfast-player-wrapper {
+    height: 100vh;
+  }
+  .vidfast-player {
+    height: 100%;
+    aspect-ratio: auto;
   }
 }
 </style>
