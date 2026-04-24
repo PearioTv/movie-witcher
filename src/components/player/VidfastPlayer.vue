@@ -1,6 +1,6 @@
 <template>
-  <div class="vidfast-player-wrapper">
-    <div class="vidfast-player">
+  <div class="vidfast-player-container">
+    <div class="vidfast-player-aspect-ratio">
       <iframe
         v-if="embedUrl"
         :src="embedUrl"
@@ -31,69 +31,63 @@ const embedUrl = computed(() => {
   const url = props.type === 'movie' 
     ? `https://vidfast.pro/movie/${props.id}` 
     : `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}`;
+  // إضافة بارامترات لضمان عمل المشغل بشكل صحيح
   return `${url}?autoPlay=true&nextButton=true`;
 } );
 </script>
 
 <style lang="scss" scoped>
-.vidfast-player-wrapper {
-  position: relative;
+.vidfast-player-container {
   width: 100%;
+  max-width: 100%;
   background: #000;
-  overflow: hidden;
-  // الحفاظ على نسبة العرض لضمان ظهور التحكم
-  aspect-ratio: 16 / 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0 auto;
 }
 
-.vidfast-player {
-  position: absolute;
-  top: 0;
-  left: 0;
+.vidfast-player-aspect-ratio {
+  position: relative;
   width: 100%;
-  height: 100%;
+  // هذه النسبة (56.25%) هي التي تضمن ظهور شريط التحكم والترجمة
+  padding-bottom: 56.25%; 
+  height: 0;
+  overflow: hidden;
+  background: #000;
 
   iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border: none;
-    // منع أي تداخل قد يخفي أدوات التحكم
-    pointer-events: auto;
   }
 
   .no-source {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
     color: #fff;
     font-family: 'Montserrat-Bold';
   }
 }
 
-// الحل السحري للهواتف: تكبير المشغل قليلاً لفرض ظهور أدوات التحكم
+// تحسينات خاصة للهواتف
 @media (max-width: 768px) {
-  .vidfast-player-wrapper {
-    aspect-ratio: 16 / 9;
-    // التأكد من أن الحاوية لا تضغط على المشغل
-    min-height: 200px;
-  }
-  
-  .vidfast-player iframe {
-    // بعض المشغلات الخارجية تخفي الأدوات إذا كان العرض أقل من 400px
-    // لذا نضمن هنا أن المشغل يرى مساحة كافية
-    min-width: 100%;
+  .vidfast-player-container {
+    // التأكد من أن المشغل يأخذ العرض الكامل للهاتف
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
   }
 }
 
-// عند تدوير الهاتف (الوضع الأفقي) - أفضل وضع للمشاهدة
+// عند تدوير الهاتف للوضع الأفقي (Landscape)
 @media (orientation: landscape) {
-  .vidfast-player-wrapper {
+  .vidfast-player-aspect-ratio {
+    // في الوضع الأفقي، نفضل أن يملأ المشغل الارتفاع أيضاً
+    padding-bottom: 0;
     height: 100vh;
-    width: 100vw;
-    aspect-ratio: auto;
   }
 }
 </style>
