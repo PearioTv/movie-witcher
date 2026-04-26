@@ -1,6 +1,6 @@
 <template>
-  <div class="vidfast-outer-wrapper">
-    <div class="vidfast-scaler">
+  <div class="vidfast-player-container">
+    <div class="vidfast-player-aspect-ratio">
       <iframe
         v-if="embedUrl"
         :src="embedUrl"
@@ -9,13 +9,16 @@
         scrolling="no"
         allow="autoplay; fullscreen; chromecast; encrypted-media"
       ></iframe>
-      <div v-else class="no-source">No source available</div>
+      <div v-else class="no-source">
+        No source available
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+
 const props = defineProps({
   type: { type: String, required: true },
   id: { type: String, required: true },
@@ -33,63 +36,56 @@ const embedUrl = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.vidfast-outer-wrapper {
-  position: relative;
+.vidfast-player-container {
   width: 100%;
+  max-width: 100%;
   background: #000;
+  margin: 0 auto;
+  border-radius: 12px;
   overflow: hidden;
-  aspect-ratio: 16 / 9; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.vidfast-scaler {
-  position: absolute;
-  width: 1280px; 
-  height: 720px;
-  transform-origin: center center;
-  
-  /* للهواتف: نقوم بتصغير المشغل ليتناسب مع عرض الشاشة */
-  transform: scale(calc(100vw / 1280));
+.vidfast-player-aspect-ratio {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  background: #000;
 
   iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border: none;
   }
 
   .no-source {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
     color: #fff;
     font-family: 'Montserrat-Bold';
   }
 }
 
-@media (min-width: 1280px) {
-  .vidfast-scaler {
-    transform: scale(1);
-    width: 100%;
-    height: 100%;
+@media (max-width: 768px) {
+  .vidfast-player-container {
+    border-radius: 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
   }
 }
 
-@media (max-width: 1279px) and (min-width: 769px) {
-  .vidfast-scaler {
-    transform: scale(calc(90vw / 1280));
-  }
-}
-
-@media (orientation: landscape) and (max-height: 500px) {
-  .vidfast-outer-wrapper {
+@media (orientation: landscape) {
+  .vidfast-player-aspect-ratio {
+    padding-bottom: 0;
     height: 100vh;
-    aspect-ratio: auto;
-  }
-  .vidfast-scaler {
-    transform: scale(calc(100vh / 720));
   }
 }
 </style>
