@@ -31,9 +31,8 @@ const embedUrl = computed(() => {
   const url = props.type === 'movie' 
     ? `https://vidfast.pro/movie/${props.id}` 
     : `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}`;
-  // إضافة بارامترات لضمان عمل المشغل بشكل صحيح
   return `${url}?autoPlay=true&nextButton=true`;
-} );
+});
 </script>
 
 <style lang="scss" scoped>
@@ -42,13 +41,15 @@ const embedUrl = computed(() => {
   max-width: 100%;
   background: #000;
   margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .vidfast-player-aspect-ratio {
   position: relative;
   width: 100%;
-  // هذه النسبة (56.25%) هي التي تضمن ظهور شريط التحكم والترجمة
-  padding-bottom: 56.25%; 
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   height: 0;
   overflow: hidden;
   background: #000;
@@ -73,19 +74,16 @@ const embedUrl = computed(() => {
   }
 }
 
-// تحسينات خاصة للهواتف
 @media (max-width: 768px) {
   .vidfast-player-container {
-    // التأكد من أن المشغل يأخذ العرض الكامل للهاتف
+    border-radius: 0;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
   }
 }
 
-// عند تدوير الهاتف للوضع الأفقي (Landscape)
 @media (orientation: landscape) {
   .vidfast-player-aspect-ratio {
-    // في الوضع الأفقي، نفضل أن يملأ المشغل الارتفاع أيضاً
     padding-bottom: 0;
     height: 100vh;
   }
