@@ -1,16 +1,14 @@
 <template>
-  <div class="vidfast-outer-wrapper">
-    <div class="vidfast-scaler">
-      <iframe
-        v-if="embedUrl"
-        :src="embedUrl"
-        frameborder="0"
-        allowfullscreen
-        scrolling="no"
-        allow="autoplay; fullscreen; chromecast; encrypted-media"
-      ></iframe>
-      <div v-else class="no-source">No source available</div>
-    </div>
+  <div class="vidfast-wrapper">
+    <iframe
+      v-if="embedUrl"
+      :src="embedUrl"
+      frameborder="0"
+      allowfullscreen
+      scrolling="no"
+      allow="autoplay; fullscreen; chromecast; encrypted-media"
+    ></iframe>
+    <div v-else class="no-source">No source available</div>
   </div>
 </template>
 
@@ -25,35 +23,25 @@ const props = defineProps({
 
 const embedUrl = computed(() => {
   if (!props.id) return '';
-  const url = props.type === 'movie' 
-    ? `https://vidfast.pro/movie/${props.id}` 
+  const url = props.type === 'movie'
+    ? `https://vidfast.pro/movie/${props.id}`
     : `https://vidfast.pro/tv/${props.id}/${props.season}/${props.episode}`;
   return `${url}?autoPlay=true&nextButton=true`;
 });
 </script>
 
 <style lang="scss" scoped>
-.vidfast-outer-wrapper {
+.vidfast-wrapper {
   position: relative;
   width: 100%;
+  aspect-ratio: 16 / 9;
   background: #000;
   overflow: hidden;
-  aspect-ratio: 16 / 9; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vidfast-scaler {
-  position: absolute;
-  width: 1280px; 
-  height: 720px;
-  transform-origin: center center;
-  
-  /* للهواتف: نقوم بتصغير المشغل ليتناسب مع عرض الشاشة */
-  transform: scale(calc(100vw / 1280));
 
   iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border: none;
@@ -69,27 +57,16 @@ const embedUrl = computed(() => {
   }
 }
 
-@media (min-width: 1280px) {
-  .vidfast-scaler {
-    transform: scale(1);
-    width: 100%;
-    height: 100%;
-  }
-}
-
-@media (max-width: 1279px) and (min-width: 769px) {
-  .vidfast-scaler {
-    transform: scale(calc(90vw / 1280));
-  }
-}
-
-@media (orientation: landscape) {
-  .vidfast-outer-wrapper {
+/* وضع landscape على الهاتف: المشغل يملأ الشاشة كاملاً */
+@media (orientation: landscape) and (max-width: 1024px) {
+  .vidfast-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100vh;
     aspect-ratio: auto;
-  }
-  .vidfast-scaler {
-    transform: scale(calc(100vh / 720));
+    z-index: 9999;
   }
 }
 </style>
