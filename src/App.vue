@@ -7,8 +7,8 @@
     
     <Error :type="client.error.type" v-if="client.error"></Error>
 
-    <div class="view-container" :class="{ 'stream-page': $route.path.includes('/stream') }">
-        <div class="inner" :class="{ 'stream-inner': $route.path.includes('/stream') }">
+    <div class="view-container">
+        <div class="inner">
             <router-view v-slot="{ Component }">
                 <transition name="fade" mode="out-in">
                     <component :is="Component" />
@@ -57,8 +57,7 @@ useMeta({
 </script>
 
 <style lang="scss">
-@import './assets/styles/main.scss';
-@import './assets/styles/variables.scss';
+@use '@/assets/styles/main.scss' as *;
 
 #app {
     min-height: 100%;
@@ -89,16 +88,6 @@ $padding-desktop: 25px;
         margin: auto;
         padding: 0 $padding-mobile;
         box-sizing: border-box;
-    }
-
-    /* صفحة المشغل بدون padding لكي يمتد كامل العرض */
-    &.stream-page {
-        padding: 0;
-        .stream-inner {
-            padding: 0;
-            max-width: 100%;
-            width: 100%;
-        }
     }
 }
 
