@@ -75,8 +75,6 @@ const goToStream = ({ type, imdb_id, id }) => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
-
 .search {
     position: relative;
 
