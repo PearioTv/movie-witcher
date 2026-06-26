@@ -5,17 +5,34 @@
       <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
     </div>
 
-    <!-- المشغل خارج content-container ليأخذ عرض الشاشة كاملاً -->
-    <div class="player-section" v-if="meta && meta.id">
-      <VidfastPlayer
-        :type="meta.type"
-        :id="meta.imdb_id || meta.id"
-        :season="selectedSeason"
-        :episode="selectedEpisodeNumber"
-      />
-    </div>
-
     <div class="content-container">
+
+      <!-- المشغل -->
+      <div class="player-section" v-if="meta && meta.id">
+        <VidfastPlayer
+          :type="meta.type"
+          :id="meta.imdb_id || meta.id"
+          :season="selectedSeason"
+          :episode="selectedEpisodeNumber"
+        />
+      </div>
+
+      <!-- معلومات الحلقة الحالية أسفل المشغل مباشرة -->
+      <div class="now-playing" v-if="isSeries && selectedEpisode">
+        <div class="now-playing-label">{{ t('views.stream.nowPlaying') || 'Now Playing' }}</div>
+        <div class="now-playing-title">
+          S{{ selectedSeason }}E{{ selectedEpisode.episode }} — {{ selectedEpisode.name || `Episode ${selectedEpisode.episode}` }}
+        </div>
+        <div class="now-playing-meta">
+          <span v-if="selectedEpisode.released">{{ formatDate(selectedEpisode.released) }}</span>
+          <span v-if="selectedEpisode.runtime">· {{ formatRuntime(selectedEpisode.runtime) }}</span>
+        </div>
+        <div class="now-playing-overview" v-if="selectedEpisode.overview">
+          {{ selectedEpisode.overview }}
+        </div>
+      </div>
+
+      <!-- معلومات الفيلم/المسلسل -->
       <div class="meta" v-if="meta">
         <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
         <div class="title" v-else>{{ meta.name }}</div>
@@ -29,12 +46,11 @@
         <div class="description">{{ meta.description }}</div>
 
         <div class="tags">
-          <div class="tag" v-for="genre in meta.genres" :key="genre">
-            {{ genre }}
-          </div>
+          <div class="tag" v-for="genre in meta.genres" :key="genre">{{ genre }}</div>
         </div>
       </div>
 
+      <!-- قائمة الحلقات -->
       <div class="series-navigation" v-if="isSeries">
         <Segments :segments="seasons" v-model="selectedSeason">
           <template #segment="{ segment }">
@@ -62,7 +78,6 @@
               <div class="ep-name">
                 <span class="ep-number-title">{{ ep.episode }}. {{ ep.name || `${t('views.stream.episode') || 'Episode'} ${ep.episode}` }}</span>
               </div>
-
               <div class="ep-meta">
                 <span class="ep-aired" v-if="ep.released">{{ formatDate(ep.released) }}</span>
                 <span class="ep-runtime" v-if="ep.runtime">{{ formatRuntime(ep.runtime) }}</span>
@@ -71,6 +86,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -91,6 +107,7 @@ const selectedSeason = ref(1);
 const selectedEpisode = ref(null);
 
 const isSeries = computed(() => meta.value && meta.value.type === 'series');
+
 const episodes = computed(() => {
   if (!meta.value || !meta.value.videos) return [];
   return meta.value.videos
@@ -130,12 +147,17 @@ onMounted(async () => {
   const { type, id } = router.currentRoute.value.params;
   if (id && type) {
     const [metaId] = id.split(':');
-    meta.value = type === 'movie' ? await StremioService.getMetaMovie(metaId) : await StremioService.getMetaSeries(metaId);
+    meta.value = type === 'movie'
+      ? await StremioService.getMetaMovie(metaId)
+      : await StremioService.getMetaSeries(metaId);
+
     if (meta.value && meta.value.videos && meta.value.videos.length) {
       const episode = meta.value.videos.find(({ id: imdb_id }) => imdb_id === id) || meta.value.videos[0];
       selectedSeason.value = episode.season || 1;
       selectedEpisode.value = episode;
-      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))].filter(s => s > 0).sort((a, b) => a - b);
+      seasons.value = [...new Set(meta.value.videos.map(({ season }) => season))]
+        .filter(s => s > 0)
+        .sort((a, b) => a - b);
     }
   }
 });
@@ -152,71 +174,187 @@ onMounted(async () => {
     z-index: -1;
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    .blur { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); }
-    .image { width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.3; }
-  }
-
-  /* المشغل يأخذ عرض الشاشة كاملاً بدون padding */
-  .player-section {
-    width: 100%;
-    background: #000;
-    /* إزالة أي padding من الأب */
-    margin-left: calc(-1 * var(--page-padding, 0px));
-    margin-right: calc(-1 * var(--page-padding, 0px));
+    .blur {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+    }
+    .image {
+      width: 100%; height: 100%;
+      background-size: cover; background-position: center; opacity: 0.3;
+    }
   }
 
   .content-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 0;
+    gap: 0;
   }
 
+  /* المشغل بدون padding على الهاتف */
+  .player-section {
+    width: 100%;
+    background: #000;
+  }
+
+  /* معلومات الحلقة الحالية */
+  .now-playing {
+    padding: 14px 16px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .now-playing-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #4a9eff;
+      font-family: 'Montserrat-SemiBold';
+    }
+
+    .now-playing-title {
+      font-size: 15px;
+      font-family: 'Montserrat-SemiBold';
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    .now-playing-meta {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      gap: 6px;
+    }
+
+    .now-playing-overview {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+      margin-top: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  /* معلومات الفيلم/المسلسل */
   .meta {
-    padding: 0 20px;
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    .logo { max-width: 200px; height: auto; }
-    .title { font-size: 28px; font-weight: bold; }
-    .details { display: flex; gap: 15px; font-size: 14px; color: #ccc; }
-    .description { font-size: 15px; line-height: 1.6; color: #eee; }
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; .tag { background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 12px; } }
+    gap: 12px;
+
+    .logo { max-width: 180px; height: auto; }
+    .title { font-size: 24px; font-family: 'Montserrat-Bold'; }
+    .details { display: flex; gap: 12px; font-size: 13px; color: #ccc; flex-wrap: wrap; }
+    .description { font-size: 14px; line-height: 1.6; color: #ddd; }
+    .tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      .tag {
+        background: rgba(255,255,255,0.1);
+        padding: 4px 12px; border-radius: 20px; font-size: 12px;
+      }
+    }
   }
 
+  /* قائمة الحلقات */
   .series-navigation {
-    padding: 0 20px 40px;
+    padding: 0 16px 40px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+
+    h4 { margin: 0; font-size: 14px; color: #ccc; }
+
     .episodes-grid {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+
       .episode-card {
-        display: flex; gap: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; cursor: pointer;
-        &.active { border: 1px solid #4a9eff; background: rgba(74,158,255,0.1); }
-        .ep-thumbnail { width: 100px; height: 60px; background-size: cover; border-radius: 4px; position: relative;
-          .ep-number { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+        display: flex;
+        gap: 12px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 8px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background 0.2s, border-color 0.2s;
+
+        &:active { background: rgba(255,255,255,0.1); }
+        &.active {
+          border-color: #4a9eff;
+          background: rgba(74,158,255,0.1);
         }
-        .ep-info { flex: 1; display: flex; flex-direction: column; gap: 4px; .ep-name { font-size: 14px; font-weight: bold; } .ep-meta { font-size: 11px; color: #aaa; } }
+
+        .ep-thumbnail {
+          width: 100px;
+          min-width: 100px;
+          height: 60px;
+          background-size: cover;
+          background-position: center;
+          background-color: rgba(255,255,255,0.05);
+          border-radius: 4px;
+          position: relative;
+
+          .ep-number {
+            position: absolute; bottom: 4px; right: 4px;
+            background: rgba(0,0,0,0.8); padding: 2px 5px;
+            border-radius: 3px; font-size: 10px; color: #fff;
+          }
+        }
+
+        .ep-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          justify-content: center;
+
+          .ep-name {
+            font-size: 13px;
+            font-family: 'Montserrat-SemiBold';
+            color: #fff;
+            line-height: 1.4;
+          }
+
+          .ep-meta {
+            font-size: 11px;
+            color: #aaa;
+            display: flex;
+            gap: 8px;
+          }
+        }
       }
     }
   }
 }
 
+/* Desktop */
 @media (min-width: 768px) {
   .stream {
+    padding: 20px 5%;
+
     .player-section {
-      margin-left: 0;
-      margin-right: 0;
       border-radius: 12px;
       overflow: hidden;
     }
-    .meta, .series-navigation { padding: 0; }
+
+    .now-playing {
+      border-radius: 0 0 8px 8px;
+      padding: 16px 20px;
+    }
+
+    .meta { padding: 20px 4px; }
+
+    .series-navigation {
+      padding: 0 4px 40px;
+    }
   }
 }
 </style>
