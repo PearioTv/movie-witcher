@@ -6,7 +6,7 @@
       frameborder="0"
       allowfullscreen
       scrolling="no"
-      allow="autoplay; fullscreen; chromecast; encrypted-media"
+      allow="autoplay; fullscreen; chromecast; encrypted-media; picture-in-picture"
     ></iframe>
     <div v-else class="no-source">No source available</div>
   </div>
@@ -53,11 +53,10 @@ const embedUrl = computed(() => {
     justify-content: center;
     height: 100%;
     color: #fff;
-    font-family: 'Montserrat-Bold';
   }
 }
 
-/* وضع landscape على الهاتف: المشغل يملأ الشاشة كاملاً */
+/* وضع landscape: المشغل يملأ الشاشة كاملاً */
 @media (orientation: landscape) and (max-width: 1024px) {
   .vidfast-wrapper {
     position: fixed;
