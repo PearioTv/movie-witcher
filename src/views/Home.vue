@@ -25,8 +25,6 @@ const goToSearch = () => router.push({ name: 'search' });
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
-
 .home {
     display: flex;
     flex-direction: column;
