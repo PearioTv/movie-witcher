@@ -5,17 +5,17 @@
       <div class="image" :style="`background-image: url(${meta.background})`" v-if="meta && meta.background"></div>
     </div>
 
-    <div class="content-container">
-      <!-- عرض المشغل مباشرة في أعلى الصفحة لضمان ظهور أدوات التحكم بالكامل -->
-      <div class="player-section" v-if="meta && meta.id">
-        <VidfastPlayer 
-          :type="meta.type" 
-          :id="meta.imdb_id || meta.id" 
-          :season="selectedSeason" 
-          :episode="selectedEpisodeNumber"
-        />
-      </div>
+    <!-- المشغل خارج content-container ليأخذ عرض الشاشة كاملاً -->
+    <div class="player-section" v-if="meta && meta.id">
+      <VidfastPlayer
+        :type="meta.type"
+        :id="meta.imdb_id || meta.id"
+        :season="selectedSeason"
+        :episode="selectedEpisodeNumber"
+      />
+    </div>
 
+    <div class="content-container">
       <div class="meta" v-if="meta">
         <img class="logo" :src="meta.logo" alt="" v-if="meta.logo">
         <div class="title" v-else>{{ meta.name }}</div>
@@ -47,9 +47,9 @@
         </div>
 
         <div class="episodes-grid">
-          <div 
-            v-for="ep in episodes" 
-            :key="ep.id" 
+          <div
+            v-for="ep in episodes"
+            :key="ep.id"
             class="episode-card"
             :class="{ active: selectedEpisode && selectedEpisode.id === ep.id }"
             @click="selectEpisode(ep)"
@@ -57,12 +57,12 @@
             <div class="ep-thumbnail" :style="ep.thumbnail ? `background-image: url(${ep.thumbnail})` : ''">
               <div class="ep-number">{{ ep.episode }}</div>
             </div>
-            
+
             <div class="ep-info">
               <div class="ep-name">
                 <span class="ep-number-title">{{ ep.episode }}. {{ ep.name || `${t('views.stream.episode') || 'Episode'} ${ep.episode}` }}</span>
               </div>
-              
+
               <div class="ep-meta">
                 <span class="ep-aired" v-if="ep.released">{{ formatDate(ep.released) }}</span>
                 <span class="ep-runtime" v-if="ep.runtime">{{ formatRuntime(ep.runtime) }}</span>
@@ -147,7 +147,6 @@ onMounted(async () => {
   flex-direction: column;
   min-height: 100vh;
   padding: 0;
-  gap: 20px;
 
   .background {
     z-index: -1;
@@ -157,6 +156,15 @@ onMounted(async () => {
     .image { width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.3; }
   }
 
+  /* المشغل يأخذ عرض الشاشة كاملاً بدون padding */
+  .player-section {
+    width: 100%;
+    background: #000;
+    /* إزالة أي padding من الأب */
+    margin-left: calc(-1 * var(--page-padding, 0px));
+    margin-right: calc(-1 * var(--page-padding, 0px));
+  }
+
   .content-container {
     display: flex;
     flex-direction: column;
@@ -164,11 +172,7 @@ onMounted(async () => {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-  }
-
-  .player-section {
-    width: 100%;
-    background: #000;
+    padding: 20px 0;
   }
 
   .meta {
@@ -206,8 +210,12 @@ onMounted(async () => {
 
 @media (min-width: 768px) {
   .stream {
-    padding: 20px 5%;
-    .player-section { border-radius: 12px; overflow: hidden; }
+    .player-section {
+      margin-left: 0;
+      margin-right: 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
     .meta, .series-navigation { padding: 0; }
   }
 }
