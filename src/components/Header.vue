@@ -66,8 +66,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
-
 header {
     z-index: 99;
     position: fixed;
