@@ -83,7 +83,7 @@
   .eyebrow { @apply text-[0.64rem] font-extrabold uppercase tracking-[0.22em] text-[#a6a29b]; }
   .eyebrow::before { content: ""; display: inline-block; width: 1.25rem; height: 2px; margin-inline-end: .55rem; vertical-align: middle; background: #e33b2f; }
   .hero-stage { @apply relative overflow-hidden bg-[#0d0d0c]; }
-  .hero-stage__image { @apply absolute inset-0 bg-cover bg-center transition-opacity duration-[1400ms] ease-in-out; background-image: linear-gradient(90deg, rgba(12,12,11,.95) 2%, rgba(12,12,11,.76) 36%, rgba(12,12,11,.18) 72%, rgba(12,12,11,.55)), linear-gradient(0deg, #10100f 0%, transparent 42%), url('/assets/movie-witcher-hero.jpg'); }
+  .hero-stage__image { @apply absolute inset-0 bg-cover bg-center transition-opacity duration-[1400ms] ease-in-out; background-image: linear-gradient(90deg, rgba(12,12,11,.95) 2%, rgba(12,12,11,.76) 36%, rgba(12,12,11,.18) 72%, rgba(12,12,11,.55)), linear-gradient(0deg, #10100f 0%, transparent 42%), url('/assets/movie-witcher-watch.jpg'); }
   .hero-stage__panel { animation: hero-panel-in .5s ease both; }
   @keyframes hero-panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .hero-stage__chip { @apply rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[.65rem] font-bold text-[#e9e5dd]; }
