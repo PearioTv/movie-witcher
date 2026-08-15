@@ -1,0 +1,185 @@
+/**
+ * DESIGN: أطلس السيلولويد — فحم عميق، عاجي دافئ، أحمر Vermilion Cut، ونسيج تحريري خفيف بدل واجهات البطاقات العامة.
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root, .dark {
+  --radius: 0.85rem;
+  --background: oklch(0.14 0.004 75);
+  --foreground: oklch(0.95 0.01 80);
+  --card: oklch(0.18 0.004 75);
+  --card-foreground: oklch(0.95 0.01 80);
+  --popover: oklch(0.17 0.004 75);
+  --popover-foreground: oklch(0.95 0.01 80);
+  --primary: oklch(0.61 0.2 31);
+  --primary-foreground: oklch(0.98 0.01 80);
+  --secondary: oklch(0.22 0.004 75);
+  --secondary-foreground: oklch(0.85 0.01 80);
+  --muted: oklch(0.21 0.004 75);
+  --muted-foreground: oklch(0.66 0.01 80);
+  --accent: oklch(0.23 0.008 48);
+  --accent-foreground: oklch(0.96 0.01 80);
+  --destructive: oklch(0.61 0.2 31);
+  --destructive-foreground: oklch(0.98 0.01 80);
+  --border: oklch(0.95 0.01 80 / 12%);
+  --input: oklch(0.95 0.01 80 / 13%);
+  --ring: oklch(0.61 0.2 31);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { background: #10100f; scroll-behavior: smooth; }
+  body { @apply bg-background text-foreground; font-family: "Manrope", ui-sans-serif, system-ui, sans-serif; overflow-x: hidden; }
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="button"]:not(:disabled), [type="submit"]:not(:disabled), [type="reset"]:not(:disabled), a[href], select:not(:disabled), input { @apply cursor-pointer; }
+  ::selection { background: #e33b2f; color: #fff; }
+}
+
+.font-display { font-family: "Space Grotesk", "Manrope", sans-serif; }
+
+@layer components {
+  .wordmark { position: relative; display: inline-flex; min-width: 4.8rem; flex-direction: column; font-family: "Space Grotesk", sans-serif; font-weight: 700; line-height: .78; letter-spacing: -.085em; color: #f6f0e8; }
+  .wordmark__top { font-size: .98rem; }
+  .wordmark__top span, .wordmark__bottom b { color: #e33b2f; }
+  .wordmark__bottom { margin-top: .28rem; padding-right: .14rem; font-size: .66rem; letter-spacing: .17em; color: #c6c1ba; }
+  .wordmark__bottom b { letter-spacing: -.09em; }
+  .wordmark__cut { position: absolute; top: .52rem; right: 1.52rem; height: 1.45rem; width: 2px; transform: rotate(27deg); background: #e33b2f; box-shadow: 3px 0 0 rgba(227,59,47,.22); }
+  .site-header { @apply fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300; border-bottom: 1px solid transparent; }
+  .site-header--solid { background: rgba(16, 16, 15, 0.84); border-color: rgba(255,255,255,.08); backdrop-filter: blur(18px); }
+  .nav-link { @apply rounded-full px-3.5 py-2 text-xs font-bold text-[#a9a7a1] transition hover:bg-white/[0.06] hover:text-[#f6f0e8]; }
+  .nav-link--active { @apply text-[#f6f0e8]; }
+  .header-icon-button { @apply rounded-full text-[#d7d2ca] hover:bg-white/[0.08] hover:text-white; }
+  .discovery-menu-item { @apply block w-full rounded-xl px-3 py-2.5 text-right text-xs font-semibold text-[#c9c5bf] transition hover:bg-white/[0.07] hover:text-white; }
+  .mobile-nav-link { @apply flex-1 rounded-xl bg-white/[0.04] px-3 py-2.5 text-center text-xs font-bold text-[#d8d3cb]; }
+  .settings-control { @apply h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f0e9] outline-none transition focus:border-[#e33b2f]/70 focus:ring-2 focus:ring-[#e33b2f]/20; }
+  .eyebrow { @apply text-[0.64rem] font-extrabold uppercase tracking-[0.22em] text-[#a6a29b]; }
+  .eyebrow::before { content: ""; display: inline-block; width: 1.25rem; height: 2px; margin-inline-end: .55rem; vertical-align: middle; background: #e33b2f; }
+  .hero-stage { @apply relative overflow-hidden bg-[#0d0d0c]; }
+  .hero-stage__image { @apply absolute inset-0 bg-cover bg-center; background-image: linear-gradient(90deg, rgba(12,12,11,.95) 2%, rgba(12,12,11,.76) 36%, rgba(12,12,11,.18) 72%, rgba(12,12,11,.55)), linear-gradient(0deg, #10100f 0%, transparent 42%), url('/assets/movie-witcher-hero.jpg'); }
+  .hero-stage__grain, .search-page__image::after { @apply pointer-events-none absolute inset-0; content: ""; opacity: .22; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
+  .hero-primary-action { @apply h-12 gap-2 rounded-xl bg-[#e33b2f] px-5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(227,59,47,.22)] transition hover:bg-[#f14a3c] active:scale-[.97]; }
+  .hero-secondary-action { @apply inline-flex h-12 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.05] px-5 text-sm font-extrabold text-[#f6f0e8] transition hover:border-white/25 hover:bg-white/10; }
+  .hero-stage__status { @apply absolute bottom-16 left-10 items-start gap-3 text-left text-xs text-[#a6a29b] lg:flex; }
+  .hero-stage__status span { @apply text-xl font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .hero-stage__status i { @apply mt-1 h-10 w-px bg-white/20; }
+  .hero-stage__status p { @apply leading-5; }
+  .intro-ribbon { @apply flex flex-col gap-4 rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5; }
+  .intro-ribbon__mark { @apply grid size-10 shrink-0 place-items-center rounded-xl bg-[#e33b2f] text-white; }
+  .intro-ribbon p { @apply max-w-2xl text-sm leading-6 text-[#c2bdb5]; }
+  .intro-ribbon__link { @apply mr-auto inline-flex shrink-0 items-center gap-2 text-xs font-bold text-[#f6f0e8] transition hover:text-[#e33b2f]; }
+  .media-rail { @apply -mx-5 flex gap-3 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:gap-4 sm:px-8 lg:-mx-10 lg:px-10; scrollbar-width: thin; scrollbar-color: rgba(227,59,47,.6) transparent; }
+  .media-card { @apply block w-[9.45rem] shrink-0 no-underline sm:w-[10.7rem]; }
+  .media-card__poster { @apply relative aspect-[2/3] overflow-hidden rounded-[1rem] bg-[#22211f] shadow-[0_20px_35px_rgba(0,0,0,.25)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_26px_42px_rgba(0,0,0,.48)]; }
+  .media-card__poster img { @apply size-full object-cover transition duration-500 group-hover:scale-[1.055]; }
+  .media-card__fallback { @apply grid size-full place-items-center bg-gradient-to-br from-[#3d3934] to-[#171614] text-xl font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .media-card__veil { @apply absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 transition group-hover:opacity-90; }
+  .media-card__play { @apply absolute bottom-3 right-3 grid size-8 place-items-center rounded-full bg-[#f6f0e8] text-[#1b1a18] opacity-0 shadow-lg transition duration-200 group-hover:opacity-100; }
+  .media-card__rating { @apply absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[.62rem] font-bold text-[#f4eee5] backdrop-blur-md; }
+  .media-card__rating svg { @apply text-[#e33b2f]; }
+  .media-card__frame { @apply absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-black/50 px-1.5 py-1 text-[.53rem] font-bold uppercase tracking-[.12em] text-[#d8d2ca] backdrop-blur-md; }
+  .media-card__frame b { @apply text-[#e33b2f]; }
+  .media-card__frame i { @apply h-2.5 w-px bg-white/30; }
+  .explore-banner { @apply relative min-h-[23rem] rounded-[1.7rem] border border-white/[.08] bg-[#1a1917] sm:rounded-[2rem]; }
+  .explore-banner__image { @apply absolute inset-0 bg-cover bg-center; background-image: linear-gradient(90deg, rgba(15,15,14,.94) 5%, rgba(15,15,14,.72) 44%, rgba(15,15,14,.13)), url('/assets/movie-witcher-explore.jpg'); }
+  .explore-banner__content { @apply relative z-10 max-w-lg p-7 sm:p-11; }
+  .explore-banner h2 { @apply mt-4 text-4xl font-bold leading-[.96] tracking-[-.075em] text-[#f5efe7] sm:text-5xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .explore-banner h2 em { @apply not-italic text-[#e33b2f]; }
+  .explore-banner p:not(.eyebrow) { @apply mt-5 max-w-sm text-sm leading-7 text-[#c0bbb3]; }
+  .catalog-skeleton { @apply flex gap-4 overflow-hidden; }
+  .catalog-skeleton span { @apply h-60 w-40 shrink-0 animate-pulse rounded-2xl bg-white/[.06]; }
+  .rail-heading { @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between; }
+  .rail-heading__route { @apply flex items-center gap-2 text-[.65rem] font-bold uppercase tracking-[.16em] text-[#908c86]; }
+  .rail-heading__route span { @apply text-[#e33b2f]; }
+  .rail-heading__route i { @apply h-px w-6 bg-white/25; }
+  .rail-heading__route em { @apply not-italic; }
+  .rail-heading__route a { @apply mr-2 hidden items-center gap-1 text-[#d5d0c8] transition hover:text-[#e33b2f] sm:inline-flex; }
+  .search-page { @apply relative min-h-screen overflow-hidden pt-[4.85rem]; }
+  .search-page__image { @apply absolute inset-x-0 top-0 h-[27rem] bg-cover bg-center; background-image: linear-gradient(180deg, rgba(16,16,15,.22), #10100f 95%), linear-gradient(90deg, rgba(16,16,15,.86), rgba(16,16,15,.25)), url('/assets/movie-witcher-search.jpg'); }
+  .search-command { @apply flex h-[4.25rem] items-center gap-3 rounded-2xl border border-white/[.12] bg-[#171715]/90 px-5 shadow-[0_22px_50px_rgba(0,0,0,.32)] backdrop-blur-xl transition focus-within:border-[#e33b2f]/65 focus-within:shadow-[0_0_0_4px_rgba(227,59,47,.09)]; }
+  .search-command input { @apply h-full min-w-0 flex-1 bg-transparent text-right text-sm text-[#f4f0e9] outline-none placeholder:text-[#74716b] sm:text-base; }
+  .segment-control { @apply inline-flex rounded-xl border border-white/10 bg-white/[.035] p-1; }
+  .segment-control__item { @apply rounded-[.6rem] px-4 py-2 text-xs font-bold text-[#9d9a94] transition; }
+  .segment-control__item--active { @apply bg-[#e33b2f] text-white shadow-sm; }
+  .media-grid { @apply grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-5 xl:grid-cols-6; }
+  .media-grid .media-card { @apply w-full; }
+  .search-empty { @apply relative flex min-h-64 items-center justify-center gap-5 overflow-hidden rounded-3xl border border-white/[.09] bg-[#151513] px-5 text-right; }
+  .search-empty::before { content: ""; @apply absolute inset-0 opacity-70; background: radial-gradient(circle at 45% 50%, rgba(227,59,47,.14), transparent 34%), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: auto, 2.4rem 2.4rem; mask-image: linear-gradient(90deg, transparent, black 38%, black 62%, transparent); }
+  .search-empty h2 { @apply text-xl font-bold tracking-[-.05em]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .search-empty p { @apply mt-1 max-w-sm text-sm leading-6 text-[#9d9a94]; }
+  .search-empty__reel { @apply relative z-10 grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[#e33b2f]/60 bg-[#e33b2f]/20; }
+  .search-empty__reel span { @apply absolute inset-y-2 w-2 rounded-full bg-[#e33b2f]/70; }
+  .search-empty__reel span:first-child { @apply right-2; }
+  .search-empty__reel span:last-child { @apply left-2; }
+  .search-empty__index { @apply relative z-10 !mt-0 text-[.62rem] font-extrabold uppercase tracking-[.17em] text-[#e33b2f]; }
+  .search-empty__tag { @apply relative z-10 mt-3 inline-flex rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[.6rem] font-bold tracking-[.12em] text-[#c2bdb5]; }
+  .loading-orbit { @apply inline-block size-5 animate-spin rounded-full border-2 border-[#e33b2f] border-t-transparent; }
+  .watch-backdrop { @apply pointer-events-none absolute inset-x-0 top-0 h-[36rem] bg-cover bg-center opacity-40; mask-image: linear-gradient(to bottom, black 0%, transparent 100%); }
+  .watch-backdrop::after { content:""; @apply absolute inset-0 bg-gradient-to-l from-[#10100f]/25 via-[#10100f]/65 to-[#10100f]; }
+  .watch-back-link { @apply relative z-10 inline-flex items-center gap-2 text-xs font-bold text-[#b9b5ae] transition hover:text-[#e33b2f]; }
+  .player-prologue { @apply mb-3 flex flex-wrap items-center gap-2 text-[.62rem] font-extrabold uppercase tracking-[.15em] text-[#a5a19a]; }
+  .player-prologue > span { @apply text-[#e33b2f]; }
+  .player-prologue > i { @apply h-px w-7 bg-white/25; }
+  .player-prologue > p { @apply tracking-[.04em]; }
+  .player-prologue > b { @apply mr-auto rounded-full border border-white/10 px-2 py-1 text-[.54rem] text-[#bbb6af]; }
+  .player-frame { @apply relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_24px_60px_rgba(0,0,0,.46)] sm:rounded-[1.5rem]; }
+  .player-frame iframe { @apply size-full border-0; }
+  .player-frame__label { @apply absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/45 px-2.5 py-1.5 text-[.55rem] font-bold tracking-[.14em] text-[#e6e0d8] backdrop-blur-md; }
+  .player-frame__label i { @apply size-1.5 rounded-full bg-[#e33b2f] shadow-[0_0_8px_#e33b2f]; }
+  .watch-action { @apply h-10 shrink-0 gap-2 rounded-xl bg-[#e33b2f] px-4 text-xs font-bold text-white hover:bg-[#f04b3f]; }
+  .meta-divider { @apply size-1 rounded-full bg-white/25; }
+  .genre-chip { @apply rounded-full border border-white/10 px-2 py-1 text-[.65rem] text-[#cac5be]; }
+  .watch-summary { @apply rounded-2xl border border-white/[.1] bg-[#171715]/75 p-5 backdrop-blur-sm; }
+  .watch-summary__head { @apply flex items-center justify-between; }
+  .watch-summary__head span { @apply rounded-md border border-[#e33b2f]/40 bg-[#e33b2f]/10 px-2 py-1 text-[.63rem] font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .watch-summary dl { @apply mt-5 space-y-4; }
+  .watch-summary dl > div { @apply flex items-center justify-between border-b border-white/[.08] pb-3 last:border-0 last:pb-0; }
+  .watch-summary dt { @apply text-xs text-[#93918c]; }
+  .watch-summary dd { @apply text-xs font-bold text-[#ded8cf]; }
+  .watch-summary__note { @apply mt-5 border-r-2 border-[#e33b2f] pr-3 text-[.68rem] leading-5 text-[#9b9892]; }
+  .season-nav { @apply inline-flex gap-1 overflow-x-auto rounded-xl border border-white/10 bg-white/[.03] p-1; }
+  .season-nav__item { @apply shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-[#9d9a94] transition hover:text-white; }
+  .season-nav__item--active { @apply bg-[#e33b2f] text-white; }
+  .episode-list { @apply grid gap-2 md:grid-cols-2; }
+  .episode-card { @apply flex items-center gap-4 rounded-2xl border border-white/[.08] bg-white/[.025] p-4 text-right transition hover:border-white/[.16] hover:bg-white/[.055]; }
+  .episode-card--active { @apply border-[#e33b2f]/70 bg-[#e33b2f]/[.08]; }
+  .episode-card__number { @apply grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.07] text-sm font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .episode-card strong { @apply block truncate text-sm font-bold text-[#e6e0d7]; }
+  .episode-card small { @apply mt-1 block line-clamp-2 text-xs leading-5 text-[#92908b]; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .media-card { animation: fade-rise .45s cubic-bezier(.23,1,.32,1) both; }
+  .media-card:nth-child(2) { animation-delay: .04s; }
+  .media-card:nth-child(3) { animation-delay: .08s; }
+  .media-card:nth-child(4) { animation-delay: .12s; }
+  .media-card:nth-child(5) { animation-delay: .16s; }
+  @keyframes fade-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+}

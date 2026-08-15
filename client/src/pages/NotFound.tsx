@@ -1,0 +1,11 @@
+/**
+ * DESIGN: أطلس السيلولويد — حتى مسار الخطأ يبقى كإطار عنواني هادئ ومباشر للعودة إلى الاستكشاف.
+ */
+import { Link } from "wouter";
+import SiteHeader from "@/components/SiteHeader";
+
+export default function NotFound() {
+  return (
+    <div className="min-h-screen bg-[#10100f] text-[#f4f0e9]" dir="rtl"><SiteHeader /><main className="mx-auto grid min-h-[78vh] max-w-[1480px] place-items-center px-5 text-center"><div><p className="eyebrow">اللقطة غير موجودة</p><h1 className="mt-4 font-display text-6xl font-bold tracking-[-0.08em] sm:text-8xl">404</h1><p className="mt-5 text-[#aaa7a1]">هذا المسار لا يقود إلى فيلم أو مسلسل متاح.</p><Link href="/" className="mt-8 inline-flex rounded-full bg-[#e33b2f] px-5 py-3 text-sm font-bold text-white">العودة إلى الصفحة الرئيسية</Link></div></main></div>
+  );
+}
