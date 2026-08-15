@@ -7,11 +7,13 @@ import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type WatchParams = { kind: MediaKind; id: string };
 
 export default function WatchPage() {
   const { kind, id } = useParams<WatchParams>();
+  const { dir, t } = useLocale();
   const [meta, setMeta] = useState<MediaItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,7 +31,7 @@ export default function WatchPage() {
       setSeason(initial?.season || 1);
       setEpisode(initial);
     }).catch((reason) => {
-      if (active) setError(reason instanceof Error ? reason.message : "تعذر تحميل العمل.");
+      if (active) setError(reason instanceof Error ? reason.message : t("watch.failedGeneric"));
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [kind, id]);
@@ -47,37 +49,37 @@ export default function WatchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#10100f] text-[#f4f0e9]" dir="rtl">
+    <div className="min-h-screen bg-[#10100f] text-[#f4f0e9]" dir={dir}>
       <SiteHeader />
       <main className="relative overflow-hidden pb-24">
         <div className="watch-backdrop" style={{ backgroundImage: `url(${backdrop})` }} aria-hidden="true" />
         <div className="relative z-10 mx-auto max-w-[1480px] px-5 pt-9 sm:px-8 lg:px-10 lg:pt-12">
-          <Link href="/search" className="watch-back-link"><ChevronRight size={16} /> عُد إلى البحث</Link>
-          {loading && <div className="flex min-h-[65vh] items-center justify-center text-sm text-[#c0bcb4]"><span className="loading-orbit ml-3" /> نجهّز غرفة العرض…</div>}
-          {!loading && error && <div className="search-empty mt-16"><Film size={22} className="text-[#e33b2f]" /><div><h1>تعذر فتح هذا العمل.</h1><p>{error}</p></div></div>}
+          <Link href="/search" className="watch-back-link">{dir === "rtl" ? <ChevronRight size={16} /> : <ChevronLeft size={16} />} {t("watch.back")}</Link>
+          {loading && <div className="flex min-h-[65vh] items-center justify-center text-sm text-[#c0bcb4]"><span className="loading-orbit ml-3" /> {t("watch.preparing")}</div>}
+          {!loading && error && <div className="search-empty mt-16"><Film size={22} className="text-[#e33b2f]" /><div><h1>{t("watch.failedTitle")}</h1><p>{error}</p></div></div>}
           {!loading && meta && (
             <div className="pt-8 lg:pt-12">
-              <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? `المسار النشط: الموسم ${season}، الحلقة ${episode?.episode || 1}` : "غرفة العرض — الفيلم المختار"}</p><b>MW / PLAYBACK</b></div>
+              <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? t("watch.activeSeason", { season, episode: episode?.episode || 1 }) : t("watch.selectedMovie")}</p><b>MW / PLAYBACK</b></div>
               <section className="player-frame">
-                <iframe key={playerUrl} src={playerUrl} title={`مشاهدة ${meta.name}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+                <iframe key={playerUrl} src={playerUrl} title={meta.name} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/45 to-transparent" />
                 <span className="player-frame__label">MOVIE WITCHER <i /> LIVE FRAME</span>
               </section>
               <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-12">
                 <div>
-                  <p className="eyebrow">{isSeries ? `الموسم ${season} · الحلقة ${episode?.episode || 1}` : "قيد التشغيل الآن"}</p>
+                  <p className="eyebrow">{isSeries ? `${t("watch.season")} ${season} · ${t("watch.episode")} ${episode?.episode || 1}` : t("watch.nowPlaying")}</p>
                   <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                     <div><h1 className="font-display text-4xl font-bold tracking-[-0.07em] sm:text-6xl">{meta.name}</h1><div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-[#adaaa4]"><span className="inline-flex items-center gap-1.5"><Star size={13} className="text-[#e33b2f]" fill="currentColor" /> {meta.imdbRating || "—"}</span><span className="meta-divider" /> <span>{meta.releaseInfo || meta.year || "—"}</span>{meta.runtime && <><span className="meta-divider" /><span className="inline-flex items-center gap-1"><Clock3 size={13} />{meta.runtime}</span></>}{meta.genres?.slice(0, 3).map((genre) => <span key={genre} className="genre-chip">{genre}</span>)}</div></div>
-                    <Button className="watch-action" onClick={() => document.querySelector("iframe")?.requestFullscreen?.()}><Play size={16} fill="currentColor" /> افتح الشاشة</Button>
+                    <Button className="watch-action" onClick={() => document.querySelector("iframe")?.requestFullscreen?.()}><Play size={16} fill="currentColor" /> {t("watch.openScreen")}</Button>
                   </div>
-                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#bbb7b0] sm:text-[0.95rem]">{episode?.description || meta.description || "لا توجد نبذة تحريرية متاحة لهذا العمل الآن."}</p>
+                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#bbb7b0] sm:text-[0.95rem]">{episode?.description || meta.description || t("watch.noSynopsis")}</p>
                 </div>
-                <aside className="watch-summary"><div className="watch-summary__head"><p className="eyebrow">تفاصيل المسار</p><span>R–01</span></div><dl><div><dt>النوع</dt><dd>{isSeries ? "مسلسل" : "فيلم"}</dd></div><div><dt>الحالة</dt><dd>متاح للمشاهدة</dd></div><div><dt>المصدر</dt><dd>Vidfast</dd></div></dl><p className="watch-summary__note">توقف مؤقتاً؟ يبقى اختيارك في هذه الغرفة حتى تعود.</p></aside>
+                <aside className="watch-summary"><div className="watch-summary__head"><p className="eyebrow">{t("watch.pathDetails")}</p><span>R–01</span></div><dl><div><dt>{t("watch.type")}</dt><dd>{isSeries ? t("watch.series") : t("watch.movie")}</dd></div><div><dt>{t("watch.status")}</dt><dd>{t("watch.available")}</dd></div><div><dt>{t("watch.source")}</dt><dd>Vidfast</dd></div></dl><p className="watch-summary__note">{t("watch.pausedNote")}</p></aside>
               </section>
               {isSeries && seasons.length > 0 && (
                 <section className="mt-14 border-t border-white/10 pt-9">
-                  <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow">اختر حلقتك</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.06em]">مسار المواسم</h2></div><div className="season-nav">{seasons.map((value) => <button key={value} type="button" onClick={() => changeSeason(value)} className={season === value ? "season-nav__item season-nav__item--active" : "season-nav__item"}>م {value}</button>)}</div></div>
-                  <div className="episode-list mt-7">{episodes.map((item) => <button key={item.id} type="button" onClick={() => { setEpisode(item); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={episode?.id === item.id ? "episode-card episode-card--active" : "episode-card"}><span className="episode-card__number">{String(item.episode).padStart(2, "0")}</span><span className="min-w-0 flex-1 text-right"><strong>{item.title || `الحلقة ${item.episode}`}</strong><small>{item.description || "اختر الحلقة لبدء المشاهدة."}</small></span><ChevronLeft size={18} className="shrink-0 text-[#77746f]" /></button>)}</div>
+                  <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow">{t("watch.chooseEpisode")}</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.06em]">{t("watch.seasonsPath")}</h2></div><div className="season-nav">{seasons.map((value) => <button key={value} type="button" onClick={() => changeSeason(value)} className={season === value ? "season-nav__item season-nav__item--active" : "season-nav__item"}>{t("watch.seasonShort")} {value}</button>)}</div></div>
+                  <div className="episode-list mt-7">{episodes.map((item) => <button key={item.id} type="button" onClick={() => { setEpisode(item); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={episode?.id === item.id ? "episode-card episode-card--active" : "episode-card"}><span className="episode-card__number">{String(item.episode).padStart(2, "0")}</span><span className={dir === "rtl" ? "min-w-0 flex-1 text-right" : "min-w-0 flex-1 text-left"}><strong>{item.title || t("watch.episodeFallback", { n: item.episode })}</strong><small>{item.description || t("watch.episodeHint")}</small></span>{dir === "rtl" ? <ChevronLeft size={18} className="shrink-0 text-[#77746f]" /> : <ChevronRight size={18} className="shrink-0 text-[#77746f]" />}</button>)}</div>
                 </section>
               )}
             </div>
