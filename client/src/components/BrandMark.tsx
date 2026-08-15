@@ -10,8 +10,8 @@ type BrandMarkProps = {
 export default function BrandMark({ compact = false }: BrandMarkProps) {
   return (
     <Link href="/" className="group inline-flex items-center gap-3 no-underline" aria-label="Movie Witcher — الصفحة الرئيسية">
-      <span className="grid size-10 place-items-center overflow-hidden rounded-[0.72rem] bg-[#e33b2f] shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
-        <img src="/assets/movie-witcher-mark.png" alt="" className="size-full object-contain" />
+      <span className="grid size-10 place-items-center overflow-hidden rounded-[0.72rem] bg-black shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
+        <img src="/assets/movie-witcher-mark.png" alt="" className="size-[85%] object-contain" />
       </span>
       {!compact && (
         <span className="wordmark" aria-label="Movie Witcher">
