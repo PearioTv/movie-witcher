@@ -6,8 +6,9 @@ import { ChevronLeft, ChevronRight, Clock3, Film, Play, Star } from "lucide-reac
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
+import { backdropUrl, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
 
@@ -19,6 +20,7 @@ export default function WatchPage() {
   const [error, setError] = useState("");
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState<Episode | null>(null);
+  const { value: localizedDescription, translating } = useLocalizedDescription(episode?.description || meta?.description);
 
   useEffect(() => {
     let active = true;
@@ -39,7 +41,7 @@ export default function WatchPage() {
   const seasons = useMemo(() => Array.from(new Set((meta?.videos || []).map((item) => item.season).filter((value) => value > 0))).sort((a, b) => a - b), [meta]);
   const episodes = useMemo(() => (meta?.videos || []).filter((item) => item.season === season).sort((a, b) => a.episode - b.episode), [meta, season]);
   const isSeries = kind === "series";
-  const backdrop = imageUrl(meta?.background) || "/assets/movie-witcher-watch.jpg";
+  const backdrop = meta ? backdropUrl(meta, "large") || "/assets/movie-witcher-watch.jpg" : "/assets/movie-witcher-watch.jpg";
   const playerUrl = isSeries && episode ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true` : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
 
   function changeSeason(next: number) {
@@ -72,7 +74,7 @@ export default function WatchPage() {
                     <div><h1 className="font-display text-4xl font-bold tracking-[-0.07em] sm:text-6xl">{meta.name}</h1><div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-[#adaaa4]"><span className="inline-flex items-center gap-1.5"><Star size={13} className="text-[#e33b2f]" fill="currentColor" /> {meta.imdbRating || "—"}</span><span className="meta-divider" /> <span>{meta.releaseInfo || meta.year || "—"}</span>{meta.runtime && <><span className="meta-divider" /><span className="inline-flex items-center gap-1"><Clock3 size={13} />{meta.runtime}</span></>}{meta.genres?.slice(0, 3).map((genre) => <span key={genre} className="genre-chip">{genre}</span>)}</div></div>
                     <Button className="watch-action" onClick={() => document.querySelector("iframe")?.requestFullscreen?.()}><Play size={16} fill="currentColor" /> {t("watch.openScreen")}</Button>
                   </div>
-                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#bbb7b0] sm:text-[0.95rem]">{episode?.description || meta.description || t("watch.noSynopsis")}</p>
+                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#bbb7b0] sm:text-[0.95rem]">{translating ? t("detail.translating") : localizedDescription || t("watch.noSynopsis")}</p>
                 </div>
                 <aside className="watch-summary"><div className="watch-summary__head"><p className="eyebrow">{t("watch.pathDetails")}</p><span>R–01</span></div><dl><div><dt>{t("watch.type")}</dt><dd>{isSeries ? t("watch.series") : t("watch.movie")}</dd></div><div><dt>{t("watch.status")}</dt><dd>{t("watch.available")}</dd></div><div><dt>{t("watch.source")}</dt><dd>Vidfast</dd></div></dl><p className="watch-summary__note">{t("watch.pausedNote")}</p></aside>
               </section>

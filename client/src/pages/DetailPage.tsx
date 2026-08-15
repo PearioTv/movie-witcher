@@ -3,8 +3,9 @@ import { ArrowLeft, ArrowRight, Clock3, Film, Play, Star } from "lucide-react";
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import MediaCard from "@/components/MediaCard";
-import { type CastMember, type Episode, type MediaItem, type MediaKind, getCatalog, getMeta, imageUrl, mediaPath } from "@/lib/stremio";
+import { enrichCastWithPhotos, type CastMember, type Episode, type MediaItem, type MediaKind, backdropUrl, getCatalog, getMeta, imageUrl, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 export default function DetailPage() {
   const { kind = "movie", id = "" } = useParams<{ kind: MediaKind; id: string }>();
@@ -14,6 +15,7 @@ export default function DetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [season, setSeason] = useState(1);
+  const { value: localizedDescription, translating } = useLocalizedDescription(meta?.description);
 
   useEffect(() => {
     let active = true;
@@ -23,6 +25,11 @@ export default function DetailPage() {
       if (!active) return;
       setMeta(data);
       setLoading(false);
+      if (data.cast?.length) {
+        enrichCastWithPhotos(data.cast).then((cast) => {
+          if (active) setMeta((current) => current ? { ...current, cast } : current);
+        }).catch(() => undefined);
+      }
       const firstSeason = data.videos?.find((video) => video.season > 0)?.season;
       setSeason(firstSeason || 1);
       getCatalog(kind).then((catalog) => {
@@ -44,7 +51,7 @@ export default function DetailPage() {
   const isSeries = kind === "series";
   const seasons = useMemo(() => Array.from(new Set((meta?.videos || []).map((item) => item.season).filter((value) => value > 0))).sort((a, b) => a - b), [meta]);
   const episodes = useMemo(() => (meta?.videos || []).filter((item) => item.season === season).sort((a, b) => a.episode - b.episode), [meta, season]);
-  const backdrop = imageUrl(meta?.background) || imageUrl(meta?.poster);
+  const backdrop = meta ? backdropUrl(meta, "large") : undefined;
 
   return (
     <div className="min-h-screen bg-[#10100f] text-[#f4f0e9]" dir={dir}>
@@ -63,7 +70,7 @@ export default function DetailPage() {
                   <p className="eyebrow">{isSeries ? t("detail.seriesEyebrow") : t("detail.movieEyebrow")}</p>
                   <h1 className="mt-4 font-display text-5xl font-bold tracking-[-0.08em] text-[#f8f3ed] sm:text-7xl">{meta.name}</h1>
                   <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-[#b6b1aa]"><span className="inline-flex items-center gap-1.5 text-[#f2ece4]"><Star size={13} className="text-[#e33b2f]" fill="currentColor" /> {meta.imdbRating || "—"}</span><span className="meta-divider" /><span>{meta.releaseInfo || meta.year || "—"}</span>{meta.runtime && <><span className="meta-divider" /><span className="inline-flex items-center gap-1"><Clock3 size={13} />{meta.runtime}</span></>}{meta.genres?.slice(0, 4).map((genreName) => <span className="genre-chip" key={genreName}>{genreName}</span>)}</div>
-                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#c0bbb4] sm:text-[0.96rem]">{meta.description || t("detail.noSynopsis")}</p>
+                  <p className="mt-7 max-w-3xl text-sm leading-7 text-[#c0bbb4] sm:text-[0.96rem]">{translating ? t("detail.translating") : localizedDescription || t("detail.noSynopsis")}</p>
                   <div className="mt-8 flex flex-wrap gap-3"><Link href={mediaPath(meta, kind)} className="watch-action inline-flex items-center"><Play size={16} fill="currentColor" /> {t("detail.play")}</Link>{isSeries && <a href="#episodes" className="detail-secondary-action">{t("detail.episodes")}</a>}</div>
                 </div>
               </section>

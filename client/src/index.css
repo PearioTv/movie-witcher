@@ -271,3 +271,12 @@
   .home-footer p { @apply mt-3 max-w-md leading-5; }
   .home-footer span { @apply mt-3 inline-flex rounded-full border border-white/10 px-2.5 py-1; }
 }
+
+@layer components {
+  .brand-lockup { @apply inline-flex min-w-0 items-center; }
+  .brand-logo-image { @apply block h-9 w-auto max-w-[9.5rem] object-contain transition-transform duration-200 group-hover:scale-[1.03]; }
+  .brand-compact-icon { @apply grid size-9 place-items-center rounded-xl border border-white/15 bg-[#050505] text-[.72rem] font-extrabold tracking-[-.14em] text-white shadow-[0_8px_24px_rgba(0,0,0,.25)] transition-transform duration-200 group-hover:scale-105; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  @media (max-width: 480px) {
+    .brand-logo-image { @apply h-8 max-w-[8rem]; }
+  }
+}
