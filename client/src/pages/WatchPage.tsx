@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Clock3, Film, Play, Star } from "lucide-reac
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { backdropUrl, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
+import { backdropUrl, recordWatchHistory, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
@@ -32,6 +32,7 @@ export default function WatchPage() {
       const initial = data.videos?.find((value) => value.id === decodeURIComponent(id)) || data.videos?.[0] || null;
       setSeason(initial?.season || 1);
       setEpisode(initial);
+      recordWatchHistory(data, kind, initial || undefined);
     }).catch((reason) => {
       if (active) setError(reason instanceof Error ? reason.message : t("watch.failedGeneric"));
     }).finally(() => { if (active) setLoading(false); });
@@ -48,6 +49,13 @@ export default function WatchPage() {
     setSeason(next);
     const nextEpisode = (meta?.videos || []).filter((value) => value.season === next).sort((a, b) => a.episode - b.episode)[0] || null;
     setEpisode(nextEpisode);
+    if (meta) recordWatchHistory(meta, kind, nextEpisode || undefined);
+  }
+
+  function selectEpisode(next: Episode) {
+    setEpisode(next);
+    if (meta) recordWatchHistory(meta, kind, next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -81,7 +89,7 @@ export default function WatchPage() {
               {isSeries && seasons.length > 0 && (
                 <section className="mt-14 border-t border-white/10 pt-9">
                   <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow">{t("watch.chooseEpisode")}</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.06em]">{t("watch.seasonsPath")}</h2></div><div className="season-nav">{seasons.map((value) => <button key={value} type="button" onClick={() => changeSeason(value)} className={season === value ? "season-nav__item season-nav__item--active" : "season-nav__item"}>{t("watch.seasonShort")} {value}</button>)}</div></div>
-                  <div className="episode-list mt-7">{episodes.map((item) => <button key={item.id} type="button" onClick={() => { setEpisode(item); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={episode?.id === item.id ? "episode-card episode-card--active" : "episode-card"}><span className="episode-card__number">{String(item.episode).padStart(2, "0")}</span><span className={dir === "rtl" ? "min-w-0 flex-1 text-right" : "min-w-0 flex-1 text-left"}><strong>{item.title || t("watch.episodeFallback", { n: item.episode })}</strong><small>{item.description || t("watch.episodeHint")}</small></span>{dir === "rtl" ? <ChevronLeft size={18} className="shrink-0 text-[#77746f]" /> : <ChevronRight size={18} className="shrink-0 text-[#77746f]" />}</button>)}</div>
+                  <div className="episode-list mt-7">{episodes.map((item) => <button key={item.id} type="button" onClick={() => selectEpisode(item)} className={episode?.id === item.id ? "episode-card episode-card--active" : "episode-card"}><span className="episode-card__number">{String(item.episode).padStart(2, "0")}</span><span className={dir === "rtl" ? "min-w-0 flex-1 text-right" : "min-w-0 flex-1 text-left"}><strong>{item.title || t("watch.episodeFallback", { n: item.episode })}</strong><small>{item.description || t("watch.episodeHint")}</small></span>{dir === "rtl" ? <ChevronLeft size={18} className="shrink-0 text-[#77746f]" /> : <ChevronRight size={18} className="shrink-0 text-[#77746f]" />}</button>)}</div>
                 </section>
               )}
             </div>

@@ -2,9 +2,9 @@
  * DESIGN: أطلس السيلولويد — بطل بصري يدور بين أبرز الأعمال الرائجة، بانتقال هادئ يشبه غرفة عرض حية.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Search, Star } from "lucide-react";
+import { Info, Play, Search, Star } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { backdropUrl, type MediaItem, detailPath, mediaPath } from "@/lib/stremio";
+import { backdropUrl, logoUrl, type MediaItem, detailPath, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const ROTATE_MS = 7000;
@@ -57,6 +57,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const path = mediaPath(active, kind);
   const details = detailPath(active, kind);
   const backdrop = backdropUrl(active, "large") || "/assets/movie-witcher-hero.jpg";
+  const titleLogo = logoUrl(active, "medium");
 
   return (
     <section
@@ -83,7 +84,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       <div className="relative z-10 mx-auto flex min-h-[42rem] max-w-[1480px] items-end px-5 pb-16 pt-28 sm:px-8 lg:min-h-[46rem] lg:px-10 lg:pb-20">
         <div key={active.id} className="hero-stage__panel max-w-2xl">
           <p className="eyebrow">Movie Witcher <span className="mx-2 text-[#e33b2f]">/</span> {kind === "series" ? t("hero.series") : t("hero.movie")}</p>
-          <h1 className="mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]">{active.name}</h1>
+          {titleLogo ? <><img src={titleLogo} alt={active.name} className="hero-title-logo" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.nextElementSibling?.classList.remove("hidden"); }} /><h1 className="hero-title-fallback hidden mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]">{active.name}</h1></> : <h1 className="mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]">{active.name}</h1>}
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-[#c9c5bd] sm:text-sm">
             {active.imdbRating && (
               <span className="inline-flex items-center gap-1.5 text-[#e33b2f]"><Star size={14} fill="currentColor" /> <span className="text-[#efece6]">{active.imdbRating}</span></span>
@@ -97,8 +98,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
             <p className="mt-5 max-w-lg text-sm leading-7 text-[#c5c0b8] sm:text-base line-clamp-3">{active.description}</p>
           )}
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={path} className="hero-primary-action"><Play size={17} fill="currentColor" /> {t("hero.play")}</Link>
-            <Link href={details} className="hero-secondary-action">{t("hero.seeMore")}</Link>
+            <Link href={path} className="hero-primary-action"><Play size={16} fill="currentColor" /> {t("hero.play")}</Link>
+            <Link href={details} className="hero-secondary-action"><Info size={16} /> {t("hero.seeMore")}</Link>
           </div>
         </div>
       </div>

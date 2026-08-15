@@ -8,6 +8,7 @@ import DiscoverPage from "@/pages/DiscoverPage";
 import DetailPage from "@/pages/DetailPage";
 import SearchPage from "@/pages/SearchPage";
 import WatchPage from "@/pages/WatchPage";
+import WatchHistoryPage from "@/pages/WatchHistoryPage";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -24,6 +25,7 @@ function Router() {
       <Route path={"/discover"} component={DiscoverPage} />
       <Route path={"/title/:kind/:id"} component={DetailPage} />
       <Route path={"/watch/:kind/:id"} component={WatchPage} />
+      <Route path={"/history"} component={WatchHistoryPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

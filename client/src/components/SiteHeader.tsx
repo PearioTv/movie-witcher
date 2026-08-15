@@ -22,6 +22,7 @@ export default function SiteHeader() {
   const navItems = [
     { label: t("nav.home"), href: "/" },
     { label: t("nav.search"), href: "/search" },
+    { label: t("nav.history"), href: "/history" },
   ];
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export default function SiteHeader() {
         <div className="border-t border-white/10 bg-[#121210]/98 px-5 py-3 backdrop-blur-xl md:hidden">
           <div className="flex gap-2" dir={dir}>
             {navItems.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">{item.label}</Link>)}
-            <Link href="/discover/movies" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.movies")}</Link><Link href="/discover/series" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.series")}</Link>
+            <Link href="/discover/movies" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.movies")}</Link><Link href="/discover/series" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.series")}</Link><Link href="/history" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.history")}</Link>
           </div>
         </div>
       )}

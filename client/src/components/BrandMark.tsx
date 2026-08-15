@@ -10,7 +10,7 @@ export default function BrandMark({ compact = false }: BrandMarkProps) {
       {compact ? (
         <span className="brand-compact-icon" aria-hidden="true">MW</span>
       ) : (
-        <img src="/assets/movie-witcher-logo.svg" alt="Movie witcher" className="brand-logo-image" />
+        <img src="/assets/movie-witcher-logo.png" alt="Movie witcher" className="brand-logo-image" />
       )}
     </Link>
   );

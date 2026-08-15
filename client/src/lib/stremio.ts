@@ -19,6 +19,7 @@ export type MediaItem = {
   type?: MediaKind;
   poster?: string;
   background?: string;
+  logo?: string;
   description?: string;
   releaseInfo?: string;
   year?: number | string;
@@ -39,6 +40,23 @@ export type Episode = {
   thumbnail?: string;
   released?: string;
 };
+
+export type WatchHistoryEntry = {
+  id: string;
+  kind: MediaKind;
+  name: string;
+  poster?: string;
+  background?: string;
+  releaseInfo?: string;
+  year?: number | string;
+  imdbRating?: string;
+  season?: number;
+  episode?: number;
+  episodeTitle?: string;
+  updatedAt: number;
+};
+
+const WATCH_HISTORY_KEY = "mw-watch-history";
 
 const CINEMETA_URL = "https://v3-cinemeta.strem.io";
 const translationCache = new Map<string, string>();
@@ -64,6 +82,23 @@ export async function searchCatalog(kind: MediaKind, query: string): Promise<Med
   if (!encoded) return [];
   const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top/search=${encoded}.json`);
   return data.metas ?? [];
+}
+
+export async function getKDramaCatalog(): Promise<MediaItem[]> {
+  const queries = ["Korean", "Squid Game", "The Glory", "Moving", "Crash Landing on You", "When Life Gives You Tangerines"];
+  const batches = await Promise.all(queries.map((query) => searchCatalog("series", query).catch(() => [])));
+  const seen = new Set<string>();
+  const results: MediaItem[] = [];
+  for (const batch of batches) {
+    for (const item of batch) {
+      const key = item.imdb_id || item.id;
+      if (!seen.has(key) && item.type === "series") {
+        seen.add(key);
+        results.push(item);
+      }
+    }
+  }
+  return results.slice(0, 14);
 }
 
 export async function getMeta(kind: MediaKind, id: string): Promise<MediaItem> {
@@ -129,6 +164,56 @@ export function mediaPath(item: MediaItem, fallbackKind: MediaKind = "movie"): s
 export function imageUrl(value?: string): string | undefined {
   if (!value) return undefined;
   return value.startsWith("http") ? value : undefined;
+}
+
+export function logoUrl(item: MediaItem, size: "small" | "medium" | "large" = "medium"): string | undefined {
+  const direct = imageUrl(item.logo);
+  if (direct) return direct;
+  const id = item.imdb_id || item.id;
+  return id ? `https://images.metahub.space/logo/${size}/${id}/img` : undefined;
+}
+
+export function readWatchHistory(): WatchHistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(WATCH_HISTORY_KEY);
+    const entries = raw ? JSON.parse(raw) as WatchHistoryEntry[] : [];
+    return Array.isArray(entries) ? entries.sort((a, b) => b.updatedAt - a.updatedAt) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeWatchHistory(entries: WatchHistoryEntry[]) {
+  localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(entries.slice(0, 100)));
+  window.dispatchEvent(new CustomEvent("mw-watch-history-change"));
+}
+
+export function recordWatchHistory(item: MediaItem, kind: MediaKind, episode?: Episode) {
+  const id = item.imdb_id || item.id;
+  const current = readWatchHistory();
+  const entry: WatchHistoryEntry = {
+    id,
+    kind,
+    name: item.name,
+    poster: item.poster,
+    background: item.background,
+    releaseInfo: item.releaseInfo,
+    year: item.year,
+    imdbRating: item.imdbRating,
+    season: episode?.season,
+    episode: episode?.episode,
+    episodeTitle: episode?.title,
+    updatedAt: Date.now(),
+  };
+  writeWatchHistory([entry, ...current.filter((value) => !(value.id === id && value.kind === kind))]);
+}
+
+export function removeWatchHistory(id: string, kind?: MediaKind) {
+  writeWatchHistory(readWatchHistory().filter((entry) => entry.id !== id || (kind && entry.kind !== kind)));
+}
+
+export function clearWatchHistory() {
+  writeWatchHistory([]);
 }
 
 export function backdropUrl(item: MediaItem, size: "medium" | "large" = "medium"): string | undefined {
