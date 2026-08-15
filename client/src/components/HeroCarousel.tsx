@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Search, Star } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { type MediaItem, imageUrl, mediaPath } from "@/lib/stremio";
+import { backdropUrl, type MediaItem, detailPath, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const ROTATE_MS = 7000;
@@ -55,7 +55,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
 
   const kind = active.type === "series" ? "series" : "movie";
   const path = mediaPath(active, kind);
-  const backdrop = imageUrl(active.background) || imageUrl(active.poster) || "/assets/movie-witcher-hero.jpg";
+  const details = detailPath(active, kind);
+  const backdrop = backdropUrl(active, "large") || "/assets/movie-witcher-hero.jpg";
 
   return (
     <section
@@ -64,7 +65,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       onMouseLeave={() => setPaused(false)}
     >
       {slides.map((slide, slideIndex) => {
-        const slideBackdrop = imageUrl(slide.background) || imageUrl(slide.poster) || "/assets/movie-witcher-hero.jpg";
+        const slideBackdrop = backdropUrl(slide, "large") || "/assets/movie-witcher-hero.jpg";
         return (
           <div
             key={slide.id}
@@ -97,7 +98,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
           )}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={path} className="hero-primary-action"><Play size={17} fill="currentColor" /> {t("hero.play")}</Link>
-            <Link href={path} className="hero-secondary-action">{t("hero.seeMore")}</Link>
+            <Link href={details} className="hero-secondary-action">{t("hero.seeMore")}</Link>
           </div>
         </div>
       </div>

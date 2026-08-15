@@ -53,6 +53,16 @@ export const translations: Record<Locale, Dict> = {
     "home.pathSeries": "مسار المسلسل",
     "home.trackPath": "تتبّع المسار",
     "home.catalogError": "لم نتمكن من تحميل بطاقات الكتالوج الآن، لكن البحث والمشاهدة يظلان متاحين عند محاولة عنوان محدد.",
+    "home.continueWatching": "متابعة المشاهدة",
+    "home.seeAll": "عرض الكل",
+    "home.resume": "استئناف المشاهدة",
+    "home.trendingToday": "الرائج اليوم",
+    "home.kdramas": "دراما كورية تعرض هذا الأسبوع",
+    "home.tvAiring": "مسلسلات تعرض هذا الأسبوع",
+    "home.popularAnime": "الأنمي الأكثر شعبية",
+    "home.upcomingMovies": "أفلام قادمة",
+    "home.footerNote": "هذا الموقع لا يخزن أي ملفات على خوادمه، بل يربط فقط بمصادر الوسائط الخارجية.",
+    "home.legal": "قانوني / DMCA",
 
     // MediaCard
     "card.open": "فتح",
@@ -201,6 +211,16 @@ export const translations: Record<Locale, Dict> = {
     "home.pathSeries": "Series path",
     "home.trackPath": "Follow the path",
     "home.catalogError": "We couldn't load the catalog cards right now, but search and watch remain available for a specific title.",
+    "home.continueWatching": "Continue Watching",
+    "home.seeAll": "See All",
+    "home.resume": "Resume watching",
+    "home.trendingToday": "Trending Today",
+    "home.kdramas": "K-Dramas Airing This Week",
+    "home.tvAiring": "TV Shows Airing This Week",
+    "home.popularAnime": "Popular Anime",
+    "home.upcomingMovies": "Upcoming Movies",
+    "home.footerNote": "This site does not store any files on our server; we only link to media hosted on third-party services.",
+    "home.legal": "Legal / DMCA",
 
     "card.open": "Open",
 

@@ -86,3 +86,11 @@ export function imageUrl(value?: string): string | undefined {
   if (!value) return undefined;
   return value.startsWith("http") ? value : undefined;
 }
+
+export function backdropUrl(item: MediaItem, size: "medium" | "large" = "medium"): string | undefined {
+  const direct = imageUrl(item.background);
+  if (direct) return direct;
+  const id = item.imdb_id || item.id;
+  if (id) return `https://images.metahub.space/background/${size}/${id}/img`;
+  return imageUrl(item.poster);
+}

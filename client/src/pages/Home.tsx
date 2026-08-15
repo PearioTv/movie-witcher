@@ -1,20 +1,15 @@
-/**
- * DESIGN: أطلس السيلولويد — بطل بصري بانورامي ومسارات اكتشاف تحريرية تتجنب تخطيط الشبكة المتماثل.
- */
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowUpLeft, Sparkles } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { ArrowLeft, ArrowRight, ChevronRight, Play, Search } from "lucide-react";
+import { Link } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import MediaCard from "@/components/MediaCard";
 import HeroCarousel from "@/components/HeroCarousel";
-import { Button } from "@/components/ui/button";
-import { type MediaItem, getCatalog } from "@/lib/stremio";
+import { type MediaItem, detailPath, getCatalog, imageUrl, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 type CatalogRows = { movies: MediaItem[]; series: MediaItem[] };
 
 export default function Home() {
-  const [, setLocation] = useLocation();
   const { dir, t } = useLocale();
   const [rows, setRows] = useState<CatalogRows>({ movies: [], series: [] });
   const [catalogError, setCatalogError] = useState(false);
@@ -27,46 +22,60 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
-  // Interleave trending movies and series so the hero rotates through a mix,
-  // the same way Cineby's featured banner cycles across both.
-  const trending = useMemo(() => {
+  const featured = useMemo(() => {
+    const candidates = [...rows.movies, ...rows.series];
+    const avengers = candidates.find((item) => item.name.toLowerCase().includes("avengers"));
     const mixed: MediaItem[] = [];
-    const max = Math.max(rows.movies.length, rows.series.length);
-    for (let i = 0; i < max && mixed.length < 8; i++) {
-      if (rows.movies[i]) mixed.push(rows.movies[i]);
-      if (rows.series[i] && mixed.length < 8) mixed.push(rows.series[i]);
+    if (avengers) mixed.push(avengers);
+    for (const item of candidates) {
+      if (mixed.length >= 8) break;
+      if (!mixed.some((current) => current.id === item.id)) mixed.push(item);
     }
     return mixed;
   }, [rows]);
 
+  const trending = useMemo(() => [...rows.series.slice(0, 6), ...rows.movies.slice(0, 8)].slice(0, 14), [rows]);
+  const kDramas = useMemo(() => {
+    const drama = rows.series.filter((item) => item.genres?.some((genre) => /drama|romance/i.test(genre)));
+    return (drama.length >= 8 ? drama : rows.series).slice(0, 14);
+  }, [rows]);
+  const anime = useMemo(() => {
+    const animated = [...rows.series, ...rows.movies].filter((item) => item.genres?.some((genre) => /animation|anime|fantasy/i.test(genre)));
+    return (animated.length >= 8 ? animated : rows.series).slice(0, 14);
+  }, [rows]);
+  const upcoming = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const future = rows.movies.filter((item) => Number(String(item.year || item.releaseInfo || "").slice(0, 4)) >= currentYear);
+    return (future.length >= 8 ? future : rows.movies).slice(0, 14);
+  }, [rows]);
+  const continueItems = useMemo(() => [rows.series[2], rows.movies[6], rows.movies[10]].filter(Boolean) as MediaItem[], [rows]);
+
   return (
-    <div className="min-h-screen bg-[#10100f] text-[#f4f0e9]" dir={dir}>
+    <div className="min-h-screen bg-[#050505] text-[#f4f0e9]" dir={dir}>
       <SiteHeader />
       <main>
-        <HeroCarousel items={trending} />
-
-        <section className="relative z-10 -mt-8 rounded-t-[2rem] bg-[#10100f] pt-12 sm:-mt-12 sm:rounded-t-[3rem] sm:pt-16">
-          <div className="mx-auto max-w-[1480px] px-5 sm:px-8 lg:px-10">
-            <div className="intro-ribbon">
-              <div className="intro-ribbon__mark"><Sparkles size={19} /></div><p>{t("home.catalogTagline")}</p><Link href="/search" className="intro-ribbon__link">{t("home.openSearch")} {dir === "rtl" ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}</Link>
-            </div>
+        <HeroCarousel items={featured} />
+        <section className="home-catalog-shell">
+          <div className="home-catalog-inner">
+            <ContinueWatching items={continueItems} t={t} dir={dir} />
+            <HomeRail title={t("home.trendingToday")} items={trending} kind="mixed" href="/discover/movies" t={t} dir={dir} />
+            <HomeRail title={t("home.kdramas")} items={kDramas} kind="series" href="/discover/series" t={t} dir={dir} />
+            <HomeRail title={t("home.tvAiring")} items={rows.series.slice(0, 14)} kind="series" href="/discover/series" t={t} dir={dir} />
+            <HomeRail title={t("home.popularAnime")} items={anime} kind="mixed" href="/discover/series" t={t} dir={dir} />
+            <HomeRail title={t("home.upcomingMovies")} items={upcoming} kind="movie" href="/discover/movies" t={t} dir={dir} />
+            {catalogError && <p className="home-catalog-error">{t("home.catalogError")}</p>}
           </div>
-          <ContentRail label={t("home.railMostViewed")} title={t("home.railStartHere")} items={rows.movies.slice(0, 10)} kind="movie" />
-          <section className="explore-banner mx-auto mt-7 max-w-[1480px] overflow-hidden sm:mt-12"><div className="explore-banner__image" /><div className="explore-banner__content"><p className="eyebrow">{t("home.exploreEyebrow")}</p><h2>{t("home.exploreTitle1")}<br /><em>{t("home.exploreTitle2")}</em></h2><p>{t("home.exploreDesc")}</p><Button variant="ghost" className="mt-5 h-10 gap-2 rounded-full border border-white/20 px-4 text-xs font-bold text-white hover:bg-white/10" onClick={() => setLocation("/discover/series")}>{t("home.exploreCta")} <ArrowUpLeft size={15} /></Button></div></section>
-          <ContentRail label={t("home.railSeasonLong")} title={t("home.railSeriesWaiting")} items={rows.series.slice(0, 10)} kind="series" />
-          {catalogError && <p className="mx-auto max-w-[1480px] px-5 pb-16 text-center text-xs leading-6 text-[#8f8d88] sm:px-8 lg:px-10">{t("home.catalogError")}</p>}
         </section>
       </main>
+      <footer className="home-footer"><strong>Movie Witcher</strong><p>{t("home.footerNote")}</p><span>◷ {t("home.legal")}</span></footer>
     </div>
   );
 }
 
-function ContentRail({ label, title, items, kind }: { label: string; title: string; items: MediaItem[]; kind: "movie" | "series" }) {
-  const { dir, t } = useLocale();
-  return (
-    <section className="mx-auto max-w-[1480px] px-5 pb-10 pt-16 sm:px-8 sm:pt-20 lg:px-10">
-      <div className="rail-heading mb-6"><div><p className="eyebrow">{label}</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.065em] sm:text-4xl">{title}</h2></div><div className="rail-heading__route"><span>PATH {kind === "movie" ? "01" : "02"}</span><i /> <em>{kind === "movie" ? t("home.pathMovie") : t("home.pathSeries")}</em><Link href={kind === "series" ? "/discover/series" : "/discover/movies"}>{t("home.trackPath")} {dir === "rtl" ? <ArrowLeft size={15} /> : <ArrowRight size={15} />}</Link></div></div>
-      {items.length > 0 ? <div className="media-rail">{items.map((item, index) => <MediaCard key={item.id} item={item} kind={kind} priority={index < 2} sequence={index + 1} />)}</div> : <div className="catalog-skeleton"><span /><span /><span /><span /><span /></div>}
-    </section>
-  );
+function ContinueWatching({ items, t, dir }: { items: MediaItem[]; t: (key: string, vars?: Record<string, string | number>) => string; dir: "rtl" | "ltr" }) {
+  return <section className="continue-section"><div className="home-section-heading"><h2><span className="section-play-mark"><Play size={10} fill="currentColor" /></span>{t("home.continueWatching")}</h2><Link href="/search" className="home-see-all">{t("home.seeAll")} <ChevronRight size={12} /></Link></div>{items.length > 0 ? <div className="continue-grid">{items.map((item, index) => <Link key={item.id} href={mediaPath(item, item.type === "series" ? "series" : "movie")} className="continue-card"><div className="continue-card__image">{imageUrl(item.background || item.poster) && <img src={imageUrl(item.background || item.poster)} alt="" />}</div><div className="continue-card__veil" /><div className="continue-card__body"><span className="continue-card__kind">{item.type === "series" ? t("hero.series") : t("hero.movie")}</span><strong>{item.name}</strong><small>{item.type === "series" ? `${t("watch.seasonShort")} 1 · ${t("watch.episode")} ${index + 1}` : t("home.resume")}</small><div className="continue-progress"><i style={{ width: `${[42, 68, 26][index % 3]}%` }} /></div></div><span className="continue-card__play"><Play size={13} fill="currentColor" /></span></Link>)}</div> : <div className="home-rail-skeleton"><span /><span /><span /></div>}</section>;
+}
+
+function HomeRail({ title, items, kind, href, t, dir }: { title: string; items: MediaItem[]; kind: "movie" | "series" | "mixed"; href: string; t: (key: string, vars?: Record<string, string | number>) => string; dir: "rtl" | "ltr" }) {
+  return <section className="home-rail-section"><div className="home-section-heading"><h2><span className="section-red-line" />{title}</h2><Link href={href} className="home-see-all">{t("home.seeAll")} {dir === "rtl" ? <ArrowLeft size={12} /> : <ArrowRight size={12} />}</Link></div>{items.length > 0 ? <div className="media-rail home-media-rail">{items.map((item, index) => <MediaCard key={`${item.id}-${index}`} item={item} kind={kind === "mixed" ? (item.type === "series" ? "series" : "movie") : kind} priority={index < 5} />)}</div> : <div className="home-rail-skeleton"><span /><span /><span /><span /><span /></div>}</section>;
 }
