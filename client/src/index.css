@@ -330,3 +330,13 @@
 @media (max-width: 767px) {
   .site-header .mobile-nav-link { flex: 1 1 calc(33.333% - .5rem); min-width: 0; }
 }
+
+@layer components {
+  .player-server-bar { @apply mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/[.025] px-3 py-2; }
+  .player-server-bar__label { @apply text-[.62rem] font-extrabold uppercase tracking-[.13em] text-[#8f8b84]; }
+  .player-server-options { @apply flex items-center gap-1 rounded-lg bg-black/20 p-1; }
+  .player-server-option { @apply rounded-md px-3 py-1.5 text-[.62rem] font-bold text-[#97938c] transition hover:text-white; }
+  .player-server-option--active { @apply bg-[#e33b2f] text-white shadow-[0_5px_14px_rgba(227,59,47,.2)]; }
+  .player-server-bar small { @apply ml-auto text-[.58rem] text-[#77736c]; }
+  [dir="rtl"] .player-server-bar small { @apply ml-0 mr-auto; }
+}

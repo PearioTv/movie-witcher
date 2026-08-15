@@ -6,11 +6,17 @@ import { ChevronLeft, ChevronRight, Clock3, Film, Play, Star } from "lucide-reac
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { backdropUrl, recordWatchHistory, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
+import { backdropUrl, playerId, recordWatchHistory, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
+type PlayerServer = "vidfast" | "vidking" | "vidcore";
+const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string }> = [
+  { id: "vidfast", label: "Vidfast" },
+  { id: "vidking", label: "Vidking" },
+  { id: "vidcore", label: "Vidcore" },
+];
 
 export default function WatchPage() {
   const { kind, id } = useParams<WatchParams>();
@@ -20,12 +26,14 @@ export default function WatchPage() {
   const [error, setError] = useState("");
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState<Episode | null>(null);
+  const [server, setServer] = useState<PlayerServer>("vidfast");
   const { value: localizedDescription, translating } = useLocalizedDescription(episode?.description || meta?.description);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
+    setServer("vidfast");
     getMeta(kind, id).then((data) => {
       if (!active) return;
       setMeta(data);
@@ -43,7 +51,40 @@ export default function WatchPage() {
   const episodes = useMemo(() => (meta?.videos || []).filter((item) => item.season === season).sort((a, b) => a.episode - b.episode), [meta, season]);
   const isSeries = kind === "series";
   const backdrop = meta ? backdropUrl(meta, "large") || "/assets/movie-witcher-watch.jpg" : "/assets/movie-witcher-watch.jpg";
-  const playerUrl = isSeries && episode ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true` : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
+  const contentId = meta ? playerId(meta) : decodeURIComponent(id).split(":")[0];
+  const playerUrl = useMemo(() => {
+    const encodedId = encodeURIComponent(contentId);
+    if (server === "vidking") {
+      return isSeries && episode
+        ? `https://www.vidking.net/embed/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true`
+        : `https://www.vidking.net/embed/movie/${encodedId}?color=e50914&autoPlay=true`;
+    }
+    if (server === "vidcore") {
+      return isSeries && episode
+        ? `https://vidcore.org/embed/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true`
+        : `https://vidcore.org/embed/movie/${encodedId}?color=e50914&autoPlay=true`;
+    }
+    return isSeries && episode
+      ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true`
+      : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
+  }, [contentId, episode, id, isSeries, server]);
+
+  useEffect(() => {
+    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org"]);
+    function onPlayerMessage(event: MessageEvent) {
+      if (!allowedOrigins.has(event.origin) || typeof event.data !== "string") return;
+      try {
+        const message = JSON.parse(event.data) as { type?: string; data?: { event?: string; progress?: number; currentTime?: number; duration?: number } };
+        if (message.type !== "PLAYER_EVENT" || !message.data) return;
+        const progressKey = `mw-progress-${kind}-${contentId}`;
+        localStorage.setItem(progressKey, JSON.stringify({ ...message.data, updatedAt: Date.now() }));
+      } catch {
+        // Ignore non-JSON postMessage payloads from the embedded provider.
+      }
+    }
+    window.addEventListener("message", onPlayerMessage);
+    return () => window.removeEventListener("message", onPlayerMessage);
+  }, [contentId, kind]);
 
   function changeSeason(next: number) {
     setSeason(next);
@@ -70,8 +111,9 @@ export default function WatchPage() {
           {!loading && meta && (
             <div className="pt-8 lg:pt-12">
               <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? t("watch.activeSeason", { season, episode: episode?.episode || 1 }) : t("watch.selectedMovie")}</p><b>MW / PLAYBACK</b></div>
+              <div className="player-server-bar"><span className="player-server-bar__label">{t("watch.server")}</span><div className="player-server-options">{PLAYER_SERVERS.map((option) => <button key={option.id} type="button" onClick={() => setServer(option.id)} className={server === option.id ? "player-server-option player-server-option--active" : "player-server-option"}>{option.label}</button>)}</div><small>{t("watch.serverNote")}</small></div>
               <section className="player-frame">
-                <iframe key={playerUrl} src={playerUrl} title={meta.name} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+                <iframe key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/45 to-transparent" />
                 <span className="player-frame__label">MOVIE WITCHER <i /> LIVE FRAME</span>
               </section>

@@ -15,6 +15,8 @@ export type MediaLink = {
 export type MediaItem = {
   id: string;
   imdb_id?: string;
+  tmdb_id?: string;
+  tmdbId?: string;
   name: string;
   type?: MediaKind;
   poster?: string;
@@ -159,6 +161,10 @@ export function mediaPath(item: MediaItem, fallbackKind: MediaKind = "movie"): s
   const kind = item.type === "series" ? "series" : fallbackKind;
   const id = item.imdb_id || item.id;
   return `/watch/${kind}/${encodeURIComponent(id)}`;
+}
+
+export function playerId(item: MediaItem): string {
+  return item.tmdb_id || item.tmdbId || item.id;
 }
 
 export function imageUrl(value?: string): string | undefined {
