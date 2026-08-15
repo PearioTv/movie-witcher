@@ -218,7 +218,8 @@
   .detail-section__heading h2 { @apply mt-2 text-3xl font-bold tracking-[-.065em] text-[#f5f0e9] sm:text-4xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
   .detail-section__count { @apply text-xs text-[#77746f]; }
   .detail-episode-list { @apply grid gap-2; }
-  .detail-episode-card { @apply flex min-h-[6.25rem] items-center gap-4 rounded-2xl border border-white/[.08] bg-white/[.03] p-3 text-inherit transition hover:border-white/[.18] hover:bg-white/[.06]; }
+  .detail-episode-card { @apply flex min-h-[6.25rem] w-full cursor-pointer appearance-none items-center gap-4 rounded-2xl border border-white/[.08] bg-white/[.03] p-3 text-inherit text-left transition hover:border-white/[.18] hover:bg-white/[.06]; }
+  .detail-episode-card--active { @apply border-[#e33b2f]/60 bg-[#e33b2f]/[.07]; }
   .detail-episode-card__number { @apply grid size-9 shrink-0 place-items-center rounded-lg bg-[#e33b2f]/15 text-xs font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
   .detail-episode-card img { @apply hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block; }
   .detail-episode-card strong { @apply block truncate text-sm font-bold text-[#eee8e0]; }
