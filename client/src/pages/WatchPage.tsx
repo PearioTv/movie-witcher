@@ -11,11 +11,13 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
-type PlayerServer = "vidfast" | "vidking" | "vidcore";
+type PlayerServer = "vidfast" | "vidking" | "vidcore" | "vidsrc" | "videasy";
 const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string }> = [
   { id: "vidfast", label: "Vidfast" },
   { id: "vidking", label: "Vidking" },
   { id: "vidcore", label: "Vidcore" },
+  { id: "vidsrc", label: "Vidsrc" },
+  { id: "videasy", label: "Videasy" },
 ];
 
 export default function WatchPage() {
@@ -52,6 +54,7 @@ export default function WatchPage() {
   const isSeries = kind === "series";
   const backdrop = meta ? backdropUrl(meta, "large") || "/assets/movie-witcher-watch.jpg" : "/assets/movie-witcher-watch.jpg";
   const contentId = meta ? playerId(meta) : decodeURIComponent(id).split(":")[0];
+  const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Vidfast";
   const playerUrl = useMemo(() => {
     const encodedId = encodeURIComponent(contentId);
     if (server === "vidking") {
@@ -64,13 +67,23 @@ export default function WatchPage() {
         ? `https://vidcore.org/embed/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true`
         : `https://vidcore.org/embed/movie/${encodedId}?color=e50914&autoPlay=true`;
     }
+    if (server === "vidsrc") {
+      return isSeries && episode
+        ? `https://vidsrc.fyi/embed/tv/${encodedId}/${episode.season}/${episode.episode}`
+        : `https://vidsrc.fyi/embed/movie/${encodedId}`;
+    }
+    if (server === "videasy") {
+      return isSeries && episode
+        ? `https://player.videasy.net/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoplay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true`
+        : `https://player.videasy.net/movie/${encodedId}?color=e50914&autoplay=true&overlay=true`;
+    }
     return isSeries && episode
       ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true`
       : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
   }, [contentId, episode, id, isSeries, server]);
 
   useEffect(() => {
-    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org"]);
+    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org", "https://vidsrc.fyi", "https://player.videasy.net"]);
     function onPlayerMessage(event: MessageEvent) {
       if (!allowedOrigins.has(event.origin) || typeof event.data !== "string") return;
       try {
@@ -126,7 +139,7 @@ export default function WatchPage() {
                   </div>
                   <p className="mt-7 max-w-3xl text-sm leading-7 text-[#bbb7b0] sm:text-[0.95rem]">{translating ? t("detail.translating") : localizedDescription || t("watch.noSynopsis")}</p>
                 </div>
-                <aside className="watch-summary"><div className="watch-summary__head"><p className="eyebrow">{t("watch.pathDetails")}</p><span>R–01</span></div><dl><div><dt>{t("watch.type")}</dt><dd>{isSeries ? t("watch.series") : t("watch.movie")}</dd></div><div><dt>{t("watch.status")}</dt><dd>{t("watch.available")}</dd></div><div><dt>{t("watch.source")}</dt><dd>Vidfast</dd></div></dl><p className="watch-summary__note">{t("watch.pausedNote")}</p></aside>
+                <aside className="watch-summary"><div className="watch-summary__head"><p className="eyebrow">{t("watch.pathDetails")}</p><span>R–01</span></div><dl><div><dt>{t("watch.type")}</dt><dd>{isSeries ? t("watch.series") : t("watch.movie")}</dd></div><div><dt>{t("watch.status")}</dt><dd>{t("watch.available")}</dd></div><div><dt>{t("watch.source")}</dt><dd>{activeServerLabel}</dd></div></dl><p className="watch-summary__note">{t("watch.pausedNote")}</p></aside>
               </section>
               {isSeries && seasons.length > 0 && (
                 <section className="mt-14 border-t border-white/10 pt-9">
