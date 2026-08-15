@@ -56,7 +56,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const kind = active.type === "series" ? "series" : "movie";
   const path = mediaPath(active, kind);
   const details = detailPath(active, kind);
-  const backdrop = backdropUrl(active, "large") || "/assets/movie-witcher-hero.jpg";
+  const backdrop = backdropUrl(active, "large") || "/assets/movie-witcher-watch.jpg";
   const titleLogo = logoUrl(active, "medium");
 
   return (
@@ -66,7 +66,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       onMouseLeave={() => setPaused(false)}
     >
       {slides.map((slide, slideIndex) => {
-        const slideBackdrop = backdropUrl(slide, "large") || "/assets/movie-witcher-hero.jpg";
+        const slideBackdrop = backdropUrl(slide, "large") || "/assets/movie-witcher-watch.jpg";
         return (
           <div
             key={slide.id}

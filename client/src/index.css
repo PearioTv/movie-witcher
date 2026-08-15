@@ -115,7 +115,7 @@
   .media-card__frame b { @apply text-[#e33b2f]; }
   .media-card__frame i { @apply h-2.5 w-px bg-white/30; }
   .explore-banner { @apply relative min-h-[23rem] rounded-[1.7rem] border border-white/[.08] bg-[#1a1917] sm:rounded-[2rem]; }
-  .explore-banner__image { @apply absolute inset-0 bg-cover bg-center; background-image: linear-gradient(90deg, rgba(15,15,14,.94) 5%, rgba(15,15,14,.72) 44%, rgba(15,15,14,.13)), url('/assets/movie-witcher-explore.jpg'); }
+  .explore-banner__image { @apply absolute inset-0 bg-cover bg-center; background-image: linear-gradient(90deg, rgba(15,15,14,.94) 5%, rgba(15,15,14,.72) 44%, rgba(15,15,14,.13)), url('/assets/movie-witcher-watch.jpg'); }
   .explore-banner__content { @apply relative z-10 max-w-lg p-7 sm:p-11; }
   .explore-banner h2 { @apply mt-4 text-4xl font-bold leading-[.96] tracking-[-.075em] text-[#f5efe7] sm:text-5xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
   .explore-banner h2 em { @apply not-italic text-[#e33b2f]; }
