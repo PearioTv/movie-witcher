@@ -4,6 +4,7 @@
 import { Play, Star } from "lucide-react";
 import { Link } from "wouter";
 import { type MediaItem, imageUrl, mediaPath } from "@/lib/stremio";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type MediaCardProps = {
   item: MediaItem;
@@ -13,15 +14,16 @@ type MediaCardProps = {
 };
 
 export default function MediaCard({ item, kind = "movie", priority = false, sequence }: MediaCardProps) {
+  const { t } = useLocale();
   const poster = imageUrl(item.poster);
   const rating = item.imdbRating || (item as MediaItem & { imdbRating?: number }).imdbRating;
-  const label = item.type === "series" || kind === "series" ? "مسلسل" : "فيلم";
+  const label = item.type === "series" || kind === "series" ? t("hero.series") : t("hero.movie");
 
   return (
-    <Link href={mediaPath(item, kind)} className="media-card group" aria-label={`فتح ${item.name}`}>
+    <Link href={mediaPath(item, kind)} className="media-card group" aria-label={`${t("card.open")} ${item.name}`}>
       <div className="media-card__poster">
         {poster ? (
-          <img src={poster} alt={`ملصق ${item.name}`} loading={priority ? "eager" : "lazy"} />
+          <img src={poster} alt={item.name} loading={priority ? "eager" : "lazy"} />
         ) : (
           <div className="media-card__fallback">MW</div>
         )}
