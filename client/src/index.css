@@ -190,3 +190,45 @@
   .media-card:nth-child(5) { animation-delay: .16s; }
   @keyframes fade-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 }
+
+@layer components {
+  .discover-page { @apply relative min-h-screen overflow-hidden pt-[4.85rem]; }
+  .discover-page__backdrop { @apply pointer-events-none absolute inset-x-0 top-0 h-[31rem] opacity-70; background: radial-gradient(circle at 18% 12%, rgba(227,59,47,.18), transparent 30%), linear-gradient(180deg, rgba(16,16,15,.25), #10100f 88%), url('/assets/movie-witcher-search.jpg') center/cover; mask-image: linear-gradient(to bottom, black 0%, transparent 100%); }
+  .discover-filters { @apply flex flex-wrap gap-2; }
+  .discover-filter { @apply relative inline-flex min-w-[9.6rem] items-center gap-2 rounded-xl border border-white/10 bg-white/[.045] px-3 py-2.5 text-xs text-[#c6c1b9] transition hover:border-white/20; }
+  .discover-filter span { @apply text-[.62rem] font-bold uppercase tracking-[.1em] text-[#8f8c85]; }
+  .discover-filter select { @apply min-w-0 flex-1 appearance-none bg-transparent pr-4 text-xs font-bold text-[#eee9e2] outline-none; }
+  .discover-filter select option { @apply bg-[#1b1a18] text-[#eee9e2]; }
+  .discover-filter svg { @apply pointer-events-none absolute right-3 text-[#e33b2f]; }
+  [dir="rtl"] .discover-filter svg { @apply right-auto left-3; }
+  .load-more-button { @apply h-11 gap-2 rounded-full border border-white/15 bg-white/[.04] px-6 text-xs font-bold text-[#eee9e2] transition hover:border-[#e33b2f]/70 hover:bg-[#e33b2f]/10 hover:text-white; }
+
+  .detail-page { @apply relative min-h-screen overflow-hidden pt-[4.85rem]; }
+  .detail-page__backdrop { @apply pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-cover bg-center opacity-45; mask-image: linear-gradient(to bottom, black 0%, transparent 93%); }
+  .detail-page__backdrop::after { content:""; @apply absolute inset-0 bg-gradient-to-r from-[#10100f] via-[#10100f]/75 to-[#10100f]/35; }
+  [dir="rtl"] .detail-page__backdrop::after { @apply bg-gradient-to-l; }
+  .detail-hero { @apply grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-center lg:gap-12; }
+  .detail-hero__poster { @apply mx-auto aspect-[2/3] w-52 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#242320] shadow-[0_26px_70px_rgba(0,0,0,.45)] sm:w-64 lg:mx-0; }
+  .detail-hero__poster img { @apply size-full object-cover; }
+  .detail-hero__poster span { @apply grid size-full place-items-center bg-gradient-to-br from-[#473d36] to-[#191816] text-4xl font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .detail-hero__copy { @apply min-w-0; }
+  .detail-secondary-action { @apply inline-flex h-10 items-center rounded-xl border border-white/15 px-4 text-xs font-bold text-[#e4ded6] transition hover:border-white/30 hover:bg-white/5; }
+  .detail-section { @apply mt-16 border-t border-white/10 pt-9; }
+  .detail-section__heading { @apply mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end; }
+  .detail-section__heading h2 { @apply mt-2 text-3xl font-bold tracking-[-.065em] text-[#f5f0e9] sm:text-4xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .detail-section__count { @apply text-xs text-[#77746f]; }
+  .detail-episode-list { @apply grid gap-2; }
+  .detail-episode-card { @apply flex min-h-[6.25rem] items-center gap-4 rounded-2xl border border-white/[.08] bg-white/[.03] p-3 text-inherit transition hover:border-white/[.18] hover:bg-white/[.06]; }
+  .detail-episode-card__number { @apply grid size-9 shrink-0 place-items-center rounded-lg bg-[#e33b2f]/15 text-xs font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .detail-episode-card img { @apply hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block; }
+  .detail-episode-card strong { @apply block truncate text-sm font-bold text-[#eee8e0]; }
+  .detail-episode-card small { @apply mt-1 block line-clamp-2 text-xs leading-5 text-[#92908b]; }
+  .cast-rail { @apply grid auto-cols-[7.15rem] grid-flow-col gap-3 overflow-x-auto pb-2; }
+  .cast-card { @apply min-w-0; }
+  .cast-card__photo { @apply aspect-[3/4] overflow-hidden rounded-xl border border-white/10 bg-[#252421]; }
+  .cast-card__photo img { @apply size-full object-cover; }
+  .cast-card__photo span { @apply grid size-full place-items-center bg-gradient-to-br from-[#4b4038] to-[#1c1b19] text-2xl font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .cast-card strong { @apply mt-3 block truncate text-[.73rem] font-bold text-[#e8e2d9]; }
+  .cast-card small { @apply mt-1 block truncate text-[.65rem] text-[#85827c]; }
+  .detail-empty { @apply rounded-2xl border border-white/10 bg-white/[.03] p-8 text-center text-sm text-[#96928b]; }
+}

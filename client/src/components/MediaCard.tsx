@@ -3,7 +3,7 @@
  */
 import { Play, Star } from "lucide-react";
 import { Link } from "wouter";
-import { type MediaItem, imageUrl, mediaPath } from "@/lib/stremio";
+import { type MediaItem, detailPath, imageUrl } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 type MediaCardProps = {
@@ -20,7 +20,7 @@ export default function MediaCard({ item, kind = "movie", priority = false, sequ
   const label = item.type === "series" || kind === "series" ? t("hero.series") : t("hero.movie");
 
   return (
-    <Link href={mediaPath(item, kind)} className="media-card group" aria-label={`${t("card.open")} ${item.name}`}>
+    <Link href={detailPath(item, kind)} className="media-card group" aria-label={`${t("card.open")} ${item.name}`}>
       <div className="media-card__poster">
         {poster ? (
           <img src={poster} alt={item.name} loading={priority ? "eager" : "lazy"} />

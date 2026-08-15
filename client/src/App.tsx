@@ -4,6 +4,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import DiscoverPage from "@/pages/DiscoverPage";
+import DetailPage from "@/pages/DetailPage";
 import SearchPage from "@/pages/SearchPage";
 import WatchPage from "@/pages/WatchPage";
 import { Route, Switch } from "wouter";
@@ -18,6 +20,9 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/search"} component={SearchPage} />
+      <Route path={"/discover/:mode"} component={DiscoverPage} />
+      <Route path={"/discover"} component={DiscoverPage} />
+      <Route path={"/title/:kind/:id"} component={DetailPage} />
       <Route path={"/watch/:kind/:id"} component={WatchPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

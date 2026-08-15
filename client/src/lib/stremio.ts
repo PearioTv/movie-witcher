@@ -1,5 +1,17 @@
 export type MediaKind = "movie" | "series";
 
+export type CastMember = {
+  name: string;
+  character?: string;
+  photo?: string;
+};
+
+export type MediaLink = {
+  name?: string;
+  category?: string;
+  url?: string;
+};
+
 export type MediaItem = {
   id: string;
   imdb_id?: string;
@@ -13,6 +25,8 @@ export type MediaItem = {
   runtime?: string;
   genres?: string[];
   imdbRating?: string;
+  cast?: Array<CastMember | string>;
+  links?: MediaLink[];
   videos?: Episode[];
 };
 
@@ -34,8 +48,12 @@ async function request<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function getCatalog(kind: MediaKind): Promise<MediaItem[]> {
-  const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top.json`);
+export async function getCatalog(kind: MediaKind, options: { skip?: number; genre?: string } = {}): Promise<MediaItem[]> {
+  const extras = [
+    options.genre ? `genre=${encodeURIComponent(options.genre)}` : "",
+    options.skip ? `skip=${options.skip}` : "",
+  ].filter(Boolean);
+  const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top${extras.length ? `/${extras.join("/")}` : ""}.json`);
   return data.metas ?? [];
 }
 
@@ -50,6 +68,12 @@ export async function getMeta(kind: MediaKind, id: string): Promise<MediaItem> {
   const [metaId] = decodeURIComponent(id).split(":");
   const data = await request<{ meta: MediaItem }>(`/meta/${kind}/${metaId}.json`);
   return data.meta;
+}
+
+export function detailPath(item: MediaItem, fallbackKind: MediaKind = "movie"): string {
+  const kind = item.type === "series" ? "series" : fallbackKind;
+  const id = item.imdb_id || item.id;
+  return `/title/${kind}/${encodeURIComponent(id)}`;
 }
 
 export function mediaPath(item: MediaItem, fallbackKind: MediaKind = "movie"): string {

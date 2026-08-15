@@ -55,8 +55,8 @@ export default function SiteHeader() {
           </button>
           {menuOpen && (
             <div className="absolute top-[4.25rem] mr-[12.6rem] w-48 rounded-2xl border border-white/10 bg-[#171714]/95 p-2 shadow-2xl backdrop-blur-xl">
-              <button className="discovery-menu-item" onClick={() => { setLocation("/search"); setMenuOpen(false); }}>{t("nav.movies")}</button>
-              <button className="discovery-menu-item" onClick={() => { setLocation("/search?type=series"); setMenuOpen(false); }}>{t("nav.series")}</button>
+              <button className="discovery-menu-item" onClick={() => { setLocation("/discover/movies"); setMenuOpen(false); }}>{t("nav.movies")}</button>
+              <button className="discovery-menu-item" onClick={() => { setLocation("/discover/series"); setMenuOpen(false); }}>{t("nav.series")}</button>
             </div>
           )}
         </nav>
@@ -99,7 +99,7 @@ export default function SiteHeader() {
         <div className="border-t border-white/10 bg-[#121210]/98 px-5 py-3 backdrop-blur-xl md:hidden">
           <div className="flex gap-2" dir={dir}>
             {navItems.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">{item.label}</Link>)}
-            <Link href="/search?type=series" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.series")}</Link>
+            <Link href="/discover/movies" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.movies")}</Link><Link href="/discover/series" onClick={() => setMenuOpen(false)} className="mobile-nav-link">{t("nav.series")}</Link>
           </div>
         </div>
       )}
