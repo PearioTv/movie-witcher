@@ -238,7 +238,7 @@
 
 @layer components {
   .home-library { @apply min-h-screen bg-[#080808] text-[#f4f0e9]; }
-  .home-catalog-shell { @apply relative z-10 bg-[#080808] pt-8 sm:pt-10; }
+  .home-catalog-shell { @apply relative z-10 bg-[#080808] pt-[7rem] sm:pt-[7.5rem]; }
   .home-catalog-inner { @apply mx-auto max-w-[1580px] px-5 sm:px-8 lg:px-10; }
   .home-library-heading { @apply mb-7 flex flex-col justify-between gap-4 border-b border-white/[.08] pb-6 sm:flex-row sm:items-end; }
   .home-library-heading h1 { @apply mt-2 text-3xl font-bold tracking-[-.065em] text-[#f5f0e9] sm:text-4xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
