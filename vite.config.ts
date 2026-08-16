@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { resolveTmdbTitle } from "./server/tmdb";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -150,6 +151,43 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
+function vitePluginTmdbProxy(): Plugin {
+  return {
+    name: "tmdb-proxy",
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use("/api/tmdb", async (req, res, next) => {
+        if (req.method !== "GET") return next();
+        const parts = req.url?.split("?")[0]?.split("/").filter(Boolean) || [];
+        const kind = parts[0] === "series" ? "series" : parts[0] === "movie" ? "movie" : null;
+        const imdbId = parts[1] || "";
+        if (!kind || !/^tt\d+$/.test(imdbId)) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "Invalid TMDB title request" }));
+          return;
+        }
+        try {
+          const title = await resolveTmdbTitle(kind, imdbId);
+          if (!title) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ error: "TMDB title not found or API key is not configured" }));
+            return;
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.setHeader("Cache-Control", "public, max-age=3600");
+          res.end(JSON.stringify({ title }));
+        } catch (error) {
+          res.statusCode = 502;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : "TMDB unavailable" }));
+        }
+      });
+    },
+  };
+}
+
 function vitePluginCastProxy(): Plugin {
   return {
     name: "imdb-cast-proxy",
@@ -253,7 +291,7 @@ function vitePluginStorageProxy(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginCastProxy(), vitePluginStorageProxy()];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginTmdbProxy(), vitePluginCastProxy(), vitePluginStorageProxy()];
 
 export default defineConfig({
   plugins,

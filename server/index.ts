@@ -2,6 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { resolveTmdbTitle } from "./tmdb";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,26 @@ async function fetchImdbCast(imdbId: string) {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  app.get("/api/tmdb/:kind/:imdbId", async (req, res) => {
+    const kind = req.params.kind === "series" ? "series" : req.params.kind === "movie" ? "movie" : null;
+    const imdbId = String(req.params.imdbId || "");
+    if (!kind || !/^tt\d+$/.test(imdbId)) {
+      res.status(400).json({ error: "Invalid TMDB title request" });
+      return;
+    }
+    try {
+      const title = await resolveTmdbTitle(kind, imdbId);
+      if (!title) {
+        res.status(404).json({ error: "TMDB title not found or API key is not configured" });
+        return;
+      }
+      res.set("Cache-Control", "public, max-age=3600");
+      res.json({ title });
+    } catch (error) {
+      res.status(502).json({ error: error instanceof Error ? error.message : "TMDB unavailable" });
+    }
+  });
 
   app.get("/api/cast/:imdbId", async (req, res) => {
     const imdbId = String(req.params.imdbId || "");

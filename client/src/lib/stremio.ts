@@ -103,10 +103,34 @@ export async function getKDramaCatalog(): Promise<MediaItem[]> {
   return results.slice(0, 14);
 }
 
+async function getTmdbMeta(kind: MediaKind, imdbId: string): Promise<Partial<MediaItem> | null> {
+  try {
+    const response = await fetch(`/api/tmdb/${kind}/${encodeURIComponent(imdbId)}`);
+    if (!response.ok) return null;
+    const payload = await response.json() as { title?: Partial<MediaItem> };
+    return payload.title || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getMeta(kind: MediaKind, id: string): Promise<MediaItem> {
   const [metaId] = decodeURIComponent(id).split(":");
-  const data = await request<{ meta: MediaItem }>(`/meta/${kind}/${metaId}.json`);
-  return data.meta;
+  const [data, tmdb] = await Promise.all([
+    request<{ meta: MediaItem }>(`/meta/${kind}/${metaId}.json`),
+    getTmdbMeta(kind, metaId),
+  ]);
+  if (!tmdb) return data.meta;
+  return {
+    ...data.meta,
+    ...tmdb,
+    id: data.meta.id,
+    imdb_id: data.meta.imdb_id || tmdb.imdb_id,
+    type: data.meta.type || kind,
+    videos: data.meta.videos,
+    cast: tmdb.cast?.length ? tmdb.cast : data.meta.cast,
+    genres: tmdb.genres?.length ? tmdb.genres : data.meta.genres,
+  };
 }
 
 export async function translateText(text: string, target: "ar" | "en"): Promise<string> {
