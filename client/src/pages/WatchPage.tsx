@@ -11,14 +11,14 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
-type PlayerServer = "vidfast" | "vidking" | "vidcore" | "vidsrc" | "videasy" | "cinesrc";
-const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string }> = [
-  { id: "vidfast", label: "Vidfast" },
-  { id: "vidking", label: "Vidking" },
-  { id: "vidcore", label: "Vidcore" },
-  { id: "vidsrc", label: "Vidsrc" },
-  { id: "videasy", label: "Videasy" },
-  { id: "cinesrc", label: "Cinesrc" },
+type PlayerServer = "rakan" | "bard" | "xayah" | "ekko" | "naafiri" | "ryze";
+const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string; serverNumber: number }> = [
+  { id: "rakan", label: "Rakan", serverNumber: 1 },
+  { id: "bard", label: "Bard", serverNumber: 2 },
+  { id: "xayah", label: "Xayah", serverNumber: 3 },
+  { id: "ekko", label: "Ekko", serverNumber: 4 },
+  { id: "naafiri", label: "Naafiri", serverNumber: 5 },
+  { id: "ryze", label: "Ryze", serverNumber: 6 },
 ];
 
 export default function WatchPage() {
@@ -29,14 +29,14 @@ export default function WatchPage() {
   const [error, setError] = useState("");
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState<Episode | null>(null);
-  const [server, setServer] = useState<PlayerServer>("vidfast");
+  const [server, setServer] = useState<PlayerServer>("rakan");
   const { value: localizedDescription, translating } = useLocalizedDescription(episode?.description || meta?.description);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-    setServer("vidfast");
+    setServer("rakan");
     getMeta(kind, id).then((data) => {
       if (!active) return;
       setMeta(data);
@@ -55,41 +55,23 @@ export default function WatchPage() {
   const isSeries = kind === "series";
   const backdrop = meta ? backdropUrl(meta, "large") || "/assets/movie-witcher-watch.jpg" : "/assets/movie-witcher-watch.jpg";
   const contentId = meta ? playerId(meta) : decodeURIComponent(id).split(":")[0];
-  const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Vidfast";
+  const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Rakan";
   const playerUrl = useMemo(() => {
-    const encodedId = encodeURIComponent(contentId);
-    if (server === "vidking") {
-      return isSeries && episode
-        ? `https://www.vidking.net/embed/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true`
-        : `https://www.vidking.net/embed/movie/${encodedId}?color=e50914&autoPlay=true`;
+    const selectedServer = PLAYER_SERVERS.find((option) => option.id === server)?.serverNumber || 1;
+    const params = new URLSearchParams({
+      type: isSeries ? "tv" : "movie",
+      id: contentId,
+      server: String(selectedServer),
+    });
+    if (isSeries) {
+      params.set("s", String(episode?.season || 1));
+      params.set("e", String(episode?.episode || 1));
     }
-    if (server === "vidcore") {
-      return isSeries && episode
-        ? `https://vidcore.org/embed/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoPlay=true&nextEpisode=true&episodeSelector=true`
-        : `https://vidcore.org/embed/movie/${encodedId}?color=e50914&autoPlay=true`;
-    }
-    if (server === "vidsrc") {
-      return isSeries && episode
-        ? `https://vidsrc.fyi/embed/tv/${encodedId}/${episode.season}/${episode.episode}`
-        : `https://vidsrc.fyi/embed/movie/${encodedId}`;
-    }
-    if (server === "videasy") {
-      return isSeries && episode
-        ? `https://player.videasy.net/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoplay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true`
-        : `https://player.videasy.net/movie/${encodedId}?color=e50914&autoplay=true&overlay=true`;
-    }
-    if (server === "cinesrc") {
-      return isSeries && episode
-        ? `https://cinesrc.st/embed/tv/${encodedId}?s=${episode.season}&e=${episode.episode}&color=%23e50914&autoplay=true&autonext=true&autoskip=true`
-        : `https://cinesrc.st/embed/movie/${encodedId}?color=%23e50914&autoplay=true`;
-    }
-    return isSeries && episode
-      ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true`
-      : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
-  }, [contentId, episode, id, isSeries, server]);
+    return `https://tmdbplayer.nunesnetwork.com/?${params.toString()}`;
+  }, [contentId, episode, isSeries, server]);
 
   useEffect(() => {
-    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org", "https://vidsrc.fyi", "https://player.videasy.net", "https://cinesrc.st"]);
+    const allowedOrigins = new Set(["https://tmdbplayer.nunesnetwork.com"]);
     function onPlayerMessage(event: MessageEvent) {
       if (!allowedOrigins.has(event.origin)) return;
       try {
@@ -98,12 +80,6 @@ export default function WatchPage() {
           const progressKey = `mw-progress-${kind}-${contentId}`;
           localStorage.setItem(progressKey, JSON.stringify({ ...raw.data, updatedAt: Date.now() }));
           return;
-        }
-        if (raw?.type === "cinesrc:timeupdate") {
-          const currentTime = Number(raw.currentTime || 0);
-          const duration = Number(raw.duration || 0);
-          const progressKey = `mw-progress-${kind}-${contentId}`;
-          localStorage.setItem(progressKey, JSON.stringify({ currentTime, duration, progress: duration > 0 ? currentTime / duration : 0, updatedAt: Date.now() }));
         }
       } catch {
         // Ignore non-JSON postMessage payloads from the embedded provider.
