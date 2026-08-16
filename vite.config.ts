@@ -150,6 +150,56 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
+function vitePluginCastProxy(): Plugin {
+  return {
+    name: "imdb-cast-proxy",
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use("/api/cast", async (req, res, next) => {
+        if (req.method !== "GET") return next();
+        const rawId = req.url?.split("?")[0]?.replace(/^\//, "") || "";
+        if (!/^tt\d+$/.test(rawId)) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "Invalid IMDb id" }));
+          return;
+        }
+        const query = `query { title(id: "${rawId}") { credits(first: 50, filter: { categories: ["actor", "actress"] }) { edges { node { name { nameText { text } primaryImage { url } } ... on Cast { characters { name } } } } } } }`;
+        try {
+          const response = await fetch("https://api.graphql.imdb.com/", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "origin": "https://www.imdb.com",
+              "referer": "https://www.imdb.com/",
+              "user-agent": "Mozilla/5.0",
+            },
+            body: JSON.stringify({ query }),
+          });
+          if (!response.ok) throw new Error(`IMDb responded with ${response.status}`);
+          const payload = await response.json() as { data?: { title?: { credits?: { edges?: Array<{ node?: { name?: { nameText?: { text?: string }; primaryImage?: { url?: string } }; characters?: Array<{ name?: string }> } }> } } } };
+          const cast = (payload.data?.title?.credits?.edges || []).map(({ node }) => {
+            const name = node?.name?.nameText?.text?.trim();
+            if (!name) return null;
+            return {
+              name,
+              character: node?.characters?.map((character) => character.name).filter(Boolean).join(", ") || undefined,
+              photo: node?.name?.primaryImage?.url,
+            };
+          }).filter((entry): entry is { name: string; character?: string; photo?: string } => Boolean(entry));
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.setHeader("Cache-Control", "public, max-age=3600");
+          res.end(JSON.stringify({ cast }));
+        } catch (error) {
+          res.statusCode = 502;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : "IMDb unavailable" }));
+        }
+      });
+    },
+  };
+}
+
 function vitePluginStorageProxy(): Plugin {
   return {
     name: "manus-storage-proxy",
@@ -203,7 +253,7 @@ function vitePluginStorageProxy(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginCastProxy(), vitePluginStorageProxy()];
 
 export default defineConfig({
   plugins,

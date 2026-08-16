@@ -142,8 +142,21 @@ async function wikipediaPhoto(name: string): Promise<string | undefined> {
   }
 }
 
+export async function getFullCast(imdbId: string): Promise<CastMember[]> {
+  const normalizedId = imdbId.trim();
+  if (!/^tt\d+$/.test(normalizedId)) return [];
+  try {
+    const response = await fetch(`/api/cast/${encodeURIComponent(normalizedId)}`);
+    if (!response.ok) return [];
+    const payload = await response.json() as { cast?: CastMember[] };
+    return Array.isArray(payload.cast) ? payload.cast : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function enrichCastWithPhotos(cast: Array<CastMember | string>): Promise<CastMember[]> {
-  return Promise.all(cast.slice(0, 12).map(async (entry) => {
+  return Promise.all(cast.slice(0, 24).map(async (entry) => {
     const member = typeof entry === "string" ? { name: entry } : entry;
     if (member.photo) return member;
     const photo = await wikipediaPhoto(member.name);
@@ -172,11 +185,19 @@ export function imageUrl(value?: string): string | undefined {
   return value.startsWith("http") ? value : undefined;
 }
 
-export function logoUrl(item: MediaItem, size: "small" | "medium" | "large" = "medium"): string | undefined {
-  const direct = imageUrl(item.logo);
-  if (direct) return direct;
+export function logoCandidates(item: MediaItem): string[] {
   const id = item.imdb_id || item.id;
-  return id ? `https://images.metahub.space/logo/${size}/${id}/img` : undefined;
+  const candidates = [
+    imageUrl(item.logo),
+    id ? `https://images.metahub.space/logo/large/${id}/img` : undefined,
+    id ? `https://images.metahub.space/logo/medium/${id}/img` : undefined,
+    id ? `https://images.metahub.space/logo/small/${id}/img` : undefined,
+  ].filter((value): value is string => Boolean(value));
+  return Array.from(new Set(candidates));
+}
+
+export function logoUrl(item: MediaItem, size: "small" | "medium" | "large" = "medium"): string | undefined {
+  return logoCandidates(item).find((value) => value.includes(`/logo/${size}/`)) || logoCandidates(item)[0];
 }
 
 export function readWatchHistory(): WatchHistoryEntry[] {

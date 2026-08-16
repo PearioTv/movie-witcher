@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Clock3, Film, Play, Star } from "lucide-react";
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import MediaCard from "@/components/MediaCard";
-import { enrichCastWithPhotos, type CastMember, type Episode, type MediaItem, type MediaKind, backdropUrl, getCatalog, getMeta, imageUrl, mediaPath } from "@/lib/stremio";
+import { enrichCastWithPhotos, getFullCast, type CastMember, type Episode, type MediaItem, type MediaKind, backdropUrl, getCatalog, getMeta, imageUrl, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
@@ -25,11 +25,13 @@ export default function DetailPage() {
       if (!active) return;
       setMeta(data);
       setLoading(false);
-      if (data.cast?.length) {
-        enrichCastWithPhotos(data.cast).then((cast) => {
-          if (active) setMeta((current) => current ? { ...current, cast } : current);
-        }).catch(() => undefined);
-      }
+      const imdbId = data.imdb_id || data.id;
+      getFullCast(imdbId).then((fullCast) => {
+        if (fullCast.length > 0) return fullCast;
+        return enrichCastWithPhotos(data.cast || []);
+      }).catch(() => enrichCastWithPhotos(data.cast || [])).then((cast) => {
+        if (active && cast.length > 0) setMeta((current) => current ? { ...current, cast } : current);
+      }).catch(() => undefined);
       const firstSeason = data.videos?.find((video) => video.season > 0)?.season;
       setSeason(firstSeason || 1);
       getCatalog(kind).then((catalog) => {
@@ -89,7 +91,7 @@ export default function DetailPage() {
 
 function CastSection({ cast, t }: { cast: Array<CastMember | string>; t: (key: string, vars?: Record<string, string | number>) => string }) {
   if (!cast.length) return null;
-  return <section className="detail-section detail-cast-section"><div className="detail-section__heading"><div><p className="eyebrow">{t("detail.castEyebrow")}</p><h2>{t("detail.topCast")}</h2></div></div><div className="cast-rail">{cast.slice(0, 10).map((entry, index) => { const member = typeof entry === "string" ? { name: entry } : entry; return <div className="cast-card" key={`${member.name}-${member.character || index}`}><div className="cast-card__photo">{imageUrl(member.photo) ? <img src={imageUrl(member.photo)} alt={member.name} loading="lazy" /> : <span>{member.name.slice(0, 1)}</span>}</div><strong>{member.name}</strong><small>{member.character || t("detail.castMember")}</small></div>; })}</div></section>;
+  return <section className="detail-section detail-cast-section"><div className="detail-section__heading"><div><p className="eyebrow">{t("detail.castEyebrow")}</p><h2>{t("detail.topCast")}</h2></div></div><div className="cast-rail">{cast.slice(0, 50).map((entry, index) => { const member = typeof entry === "string" ? { name: entry } : entry; return <div className="cast-card" key={`${member.name}-${member.character || index}`}><div className="cast-card__photo">{imageUrl(member.photo) ? <img src={imageUrl(member.photo)} alt={member.name} loading="lazy" /> : <span>{member.name.slice(0, 1)}</span>}</div><strong>{member.name}</strong><small>{member.character || t("detail.castMember")}</small></div>; })}</div></section>;
 }
 
 function EpisodeCard({ item, kind, id, t, dir }: { item: Episode; kind: MediaKind; id: string; t: (key: string, vars?: Record<string, string | number>) => string; dir: "rtl" | "ltr" }) {

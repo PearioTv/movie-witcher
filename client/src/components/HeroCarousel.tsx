@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Info, Play, Search, Star } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { backdropUrl, logoUrl, type MediaItem, detailPath, mediaPath } from "@/lib/stremio";
+import { backdropUrl, logoCandidates, type MediaItem, detailPath, mediaPath } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const ROTATE_MS = 7000;
@@ -12,6 +12,14 @@ const ROTATE_MS = 7000;
 type HeroCarouselProps = {
   items: MediaItem[];
 };
+
+function HeroTitle({ name, logos }: { name: string; logos: string[] }) {
+  const [logoIndex, setLogoIndex] = useState(0);
+  useEffect(() => setLogoIndex(0), [name]);
+  const fallbackClass = "mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]";
+  if (!logos[logoIndex]) return <h1 className={fallbackClass}>{name}</h1>;
+  return <img src={logos[logoIndex]} alt={name} className="hero-title-logo" onError={() => setLogoIndex((value) => value + 1)} />;
+}
 
 export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [, setLocation] = useLocation();
@@ -57,7 +65,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const path = mediaPath(active, kind);
   const details = detailPath(active, kind);
   const backdrop = backdropUrl(active, "large") || "/assets/movie-witcher-watch.jpg";
-  const titleLogo = logoUrl(active, "medium");
+  const titleLogos = logoCandidates(active);
 
   return (
     <section
@@ -84,7 +92,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       <div className="relative z-10 mx-auto flex min-h-[42rem] max-w-[1480px] items-end px-5 pb-16 pt-28 sm:px-8 lg:min-h-[46rem] lg:px-10 lg:pb-20">
         <div key={active.id} className="hero-stage__panel max-w-2xl">
           <p className="eyebrow">Movie Witcher <span className="mx-2 text-[#e33b2f]">/</span> {kind === "series" ? t("hero.series") : t("hero.movie")}</p>
-          {titleLogo ? <><img src={titleLogo} alt={active.name} className="hero-title-logo" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.nextElementSibling?.classList.remove("hidden"); }} /><h1 className="hero-title-fallback hidden mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]">{active.name}</h1></> : <h1 className="mt-5 font-display text-[clamp(2.6rem,6.5vw,5.4rem)] font-bold leading-[0.94] tracking-[-0.06em] text-[#f7f2eb]">{active.name}</h1>}
+          <HeroTitle name={active.name} logos={titleLogos} />
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-[#c9c5bd] sm:text-sm">
             {active.imdbRating && (
               <span className="inline-flex items-center gap-1.5 text-[#e33b2f]"><Star size={14} fill="currentColor" /> <span className="text-[#efece6]">{active.imdbRating}</span></span>
