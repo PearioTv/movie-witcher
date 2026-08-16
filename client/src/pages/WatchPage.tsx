@@ -12,6 +12,7 @@ import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
 type PlayerServer = "rakan" | "bard" | "xayah" | "ekko" | "naafiri" | "ryze";
+const DEFAULT_PLAYER_SERVER: PlayerServer = "bard";
 const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string; serverNumber: number }> = [
   { id: "rakan", label: "Rakan", serverNumber: 1 },
   { id: "bard", label: "Bard", serverNumber: 2 },
@@ -29,14 +30,16 @@ export default function WatchPage() {
   const [error, setError] = useState("");
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState<Episode | null>(null);
-  const [server, setServer] = useState<PlayerServer>("rakan");
+  const [server, setServer] = useState<PlayerServer>(DEFAULT_PLAYER_SERVER);
+  const [playerFailed, setPlayerFailed] = useState(false);
   const { value: localizedDescription, translating } = useLocalizedDescription(episode?.description || meta?.description);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-    setServer("rakan");
+    setServer(DEFAULT_PLAYER_SERVER);
+    setPlayerFailed(false);
     getMeta(kind, id).then((data) => {
       if (!active) return;
       setMeta(data);
@@ -55,7 +58,7 @@ export default function WatchPage() {
   const isSeries = kind === "series";
   const backdrop = meta ? backdropUrl(meta, "large") || "/assets/movie-witcher-watch.jpg" : "/assets/movie-witcher-watch.jpg";
   const contentId = meta ? playerId(meta) : decodeURIComponent(id).split(":")[0];
-  const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Rakan";
+  const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Bard";
   const playerUrl = useMemo(() => {
     const selectedServer = PLAYER_SERVERS.find((option) => option.id === server)?.serverNumber || 1;
     const tmdbId = encodeURIComponent(contentId);
@@ -161,9 +164,10 @@ export default function WatchPage() {
           {!loading && meta && (
             <div className="pt-8 lg:pt-12">
               <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? t("watch.activeSeason", { season, episode: episode?.episode || 1 }) : t("watch.selectedMovie")}</p><b>MW / PLAYBACK</b></div>
-              <div className="player-server-bar"><span className="player-server-bar__label">{t("watch.server")}</span><div className="player-server-options">{PLAYER_SERVERS.map((option) => <button key={option.id} type="button" onClick={() => setServer(option.id)} className={server === option.id ? "player-server-option player-server-option--active" : "player-server-option"}>{option.label}</button>)}</div><small>{t("watch.serverNote")}</small></div>
+              <div className="player-server-bar"><span className="player-server-bar__label">{t("watch.server")}</span><div className="player-server-options">{PLAYER_SERVERS.map((option) => <button key={option.id} type="button" onClick={() => { setServer(option.id); setPlayerFailed(false); }} className={server === option.id ? "player-server-option player-server-option--active" : "player-server-option"} aria-pressed={server === option.id}>{option.label}</button>)}</div><small>{t("watch.serverNote")}</small></div>
               <section className="player-frame">
-                <iframe className="player-frame__embed" scrolling="no" key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
+                <iframe className="player-frame__embed" scrolling="no" key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen onError={() => setPlayerFailed(true)} />
+                {playerFailed && <div className="player-fallback"><strong>{t("watch.sourceFailedTitle")}</strong><p>{t("watch.sourceFailedDesc", { server: activeServerLabel })}</p><button type="button" onClick={() => { const index = PLAYER_SERVERS.findIndex((option) => option.id === server); const next = PLAYER_SERVERS[(index + 1) % PLAYER_SERVERS.length]; setServer(next.id); setPlayerFailed(false); }}>{t("watch.tryAnotherServer")}</button></div>}
               </section>
               <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-12">
                 <div>

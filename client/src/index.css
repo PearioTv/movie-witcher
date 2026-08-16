@@ -162,6 +162,10 @@
   .player-frame { @apply relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_24px_60px_rgba(0,0,0,.46)] sm:rounded-[1.5rem]; }
   .player-frame iframe { @apply size-full border-0; }
   .player-frame iframe.player-frame__embed { display: block; width: 100%; height: 100%; }
+  .player-fallback { @apply absolute inset-0 z-10 grid place-items-center bg-[#111]/95 p-6 text-center backdrop-blur-md; }
+  .player-fallback strong { @apply text-lg font-bold text-white; }
+  .player-fallback p { @apply mt-2 max-w-md text-sm leading-6 text-[#aaa59d]; }
+  .player-fallback button { @apply mt-5 rounded-xl bg-[#e33b2f] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#f04b3f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white; }
   .watch-action { @apply h-10 shrink-0 gap-2 rounded-xl bg-[#e33b2f] px-4 text-xs font-bold text-white hover:bg-[#f04b3f]; }
   .meta-divider { @apply size-1 rounded-full bg-white/25; }
   .genre-chip { @apply rounded-full border border-white/10 px-2 py-1 text-[.65rem] text-[#cac5be]; }
