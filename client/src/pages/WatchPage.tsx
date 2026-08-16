@@ -116,7 +116,7 @@ export default function WatchPage() {
               <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? t("watch.activeSeason", { season, episode: episode?.episode || 1 }) : t("watch.selectedMovie")}</p><b>MW / PLAYBACK</b></div>
               <div className="player-server-bar"><span className="player-server-bar__label">{t("watch.server")}</span><div className="player-server-options">{PLAYER_SERVERS.map((option) => <button key={option.id} type="button" onClick={() => setServer(option.id)} className={server === option.id ? "player-server-option player-server-option--active" : "player-server-option"}>{option.label}</button>)}</div><small>{t("watch.serverNote")}</small></div>
               <section className="player-frame">
-                <iframe className="player-frame__embed" key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
+                <iframe className="player-frame__embed" scrolling="no" key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
               </section>
               <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-12">
                 <div>
