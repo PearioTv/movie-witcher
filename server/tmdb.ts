@@ -14,6 +14,8 @@ type TmdbTitle = {
   runtime?: number;
   episode_run_time?: number[];
   vote_average?: number;
+  original_language?: string;
+  origin_country?: string[];
   genres?: Array<{ id: number; name: string }>;
   poster_path?: string | null;
   backdrop_path?: string | null;
@@ -104,6 +106,8 @@ export async function resolveTmdbTitle(kind: TmdbKind, imdbId: string) {
     year: releaseDate ? Number(releaseDate.slice(0, 4)) : undefined,
     runtime: details.runtime || details.episode_run_time?.[0] ? `${details.runtime || details.episode_run_time?.[0]} min` : undefined,
     genres: details.genres?.map((genre) => genre.name) || [],
+    originalLanguage: details.original_language,
+    originCountry: details.origin_country,
     imdbRating: typeof details.vote_average === "number" ? details.vote_average.toFixed(1) : undefined,
     cast,
   };

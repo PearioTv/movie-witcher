@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import MediaCard from "@/components/MediaCard";
 import HeroCarousel from "@/components/HeroCarousel";
-import { type MediaItem, type WatchHistoryEntry, getCatalog, getKDramaCatalog, imageUrl, readWatchHistory } from "@/lib/stremio";
+import { type MediaItem, type WatchHistoryEntry, getAnimeCatalog, getCatalog, getKDramaCatalog, imageUrl, readWatchHistory } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 
 type CatalogRows = { movies: MediaItem[]; series: MediaItem[] };
@@ -14,6 +14,7 @@ export default function Home() {
   const { dir, t } = useLocale();
   const [rows, setRows] = useState<CatalogRows>({ movies: [], series: [] });
   const [kDramas, setKDramas] = useState<MediaItem[]>([]);
+  const [anime, setAnime] = useState<MediaItem[]>([]);
   const [history, setHistory] = useState<WatchHistoryEntry[]>([]);
   const [catalogError, setCatalogError] = useState(false);
 
@@ -23,6 +24,7 @@ export default function Home() {
       if (active) setRows({ movies, series });
     }).catch(() => { if (active) setCatalogError(true); });
     getKDramaCatalog().then((items) => { if (active) setKDramas(items); }).catch(() => undefined);
+    getAnimeCatalog().then((items) => { if (active) setAnime(items); }).catch(() => undefined);
     const syncHistory = () => setHistory(readWatchHistory());
     syncHistory();
     window.addEventListener("mw-watch-history-change", syncHistory);
@@ -42,10 +44,6 @@ export default function Home() {
   }, [rows]);
 
   const trending = useMemo(() => [...rows.series.slice(0, 6), ...rows.movies.slice(0, 8)].slice(0, 14), [rows]);
-  const anime = useMemo(() => {
-    const animated = [...rows.series, ...rows.movies].filter((item) => item.genres?.some((genre) => /animation|anime|fantasy/i.test(genre)));
-    return (animated.length >= 8 ? animated : rows.series).slice(0, 14);
-  }, [rows]);
   const upcoming = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const future = rows.movies.filter((item) => Number(String(item.year || item.releaseInfo || "").slice(0, 4)) >= currentYear);

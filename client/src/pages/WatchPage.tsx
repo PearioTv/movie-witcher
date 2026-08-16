@@ -11,13 +11,14 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
 type WatchParams = { kind: MediaKind; id: string };
-type PlayerServer = "vidfast" | "vidking" | "vidcore" | "vidsrc" | "videasy";
+type PlayerServer = "vidfast" | "vidking" | "vidcore" | "vidsrc" | "videasy" | "cinesrc";
 const PLAYER_SERVERS: Array<{ id: PlayerServer; label: string }> = [
   { id: "vidfast", label: "Vidfast" },
   { id: "vidking", label: "Vidking" },
   { id: "vidcore", label: "Vidcore" },
   { id: "vidsrc", label: "Vidsrc" },
   { id: "videasy", label: "Videasy" },
+  { id: "cinesrc", label: "Cinesrc" },
 ];
 
 export default function WatchPage() {
@@ -77,20 +78,33 @@ export default function WatchPage() {
         ? `https://player.videasy.net/tv/${encodedId}/${episode.season}/${episode.episode}?color=e50914&autoplay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true`
         : `https://player.videasy.net/movie/${encodedId}?color=e50914&autoplay=true&overlay=true`;
     }
+    if (server === "cinesrc") {
+      return isSeries && episode
+        ? `https://cinesrc.st/embed/tv/${encodedId}?s=${episode.season}&e=${episode.episode}&color=%23e50914&autoplay=true&autonext=true&autoskip=true`
+        : `https://cinesrc.st/embed/movie/${encodedId}?color=%23e50914&autoplay=true`;
+    }
     return isSeries && episode
       ? `https://vidfast.pro/tv/${encodeURIComponent(id.split(":")[0])}/${episode.season}/${episode.episode}?autoPlay=true&nextButton=true`
       : `https://vidfast.pro/movie/${encodeURIComponent(id.split(":")[0])}?autoPlay=true&nextButton=true`;
   }, [contentId, episode, id, isSeries, server]);
 
   useEffect(() => {
-    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org", "https://vidsrc.fyi", "https://player.videasy.net"]);
+    const allowedOrigins = new Set(["https://vidfast.pro", "https://www.vidking.net", "https://vidcore.org", "https://vidsrc.fyi", "https://player.videasy.net", "https://cinesrc.st"]);
     function onPlayerMessage(event: MessageEvent) {
-      if (!allowedOrigins.has(event.origin) || typeof event.data !== "string") return;
+      if (!allowedOrigins.has(event.origin)) return;
       try {
-        const message = JSON.parse(event.data) as { type?: string; data?: { event?: string; progress?: number; currentTime?: number; duration?: number } };
-        if (message.type !== "PLAYER_EVENT" || !message.data) return;
-        const progressKey = `mw-progress-${kind}-${contentId}`;
-        localStorage.setItem(progressKey, JSON.stringify({ ...message.data, updatedAt: Date.now() }));
+        const raw = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (raw?.type === "PLAYER_EVENT" && raw.data) {
+          const progressKey = `mw-progress-${kind}-${contentId}`;
+          localStorage.setItem(progressKey, JSON.stringify({ ...raw.data, updatedAt: Date.now() }));
+          return;
+        }
+        if (raw?.type === "cinesrc:timeupdate") {
+          const currentTime = Number(raw.currentTime || 0);
+          const duration = Number(raw.duration || 0);
+          const progressKey = `mw-progress-${kind}-${contentId}`;
+          localStorage.setItem(progressKey, JSON.stringify({ currentTime, duration, progress: duration > 0 ? currentTime / duration : 0, updatedAt: Date.now() }));
+        }
       } catch {
         // Ignore non-JSON postMessage payloads from the embedded provider.
       }

@@ -27,6 +27,12 @@ export type MediaItem = {
   year?: number | string;
   runtime?: string;
   genres?: string[];
+  genre?: string[];
+  country?: string;
+  originalLanguage?: string;
+  originCountry?: string[];
+  inProduction?: boolean;
+  status?: string;
   imdbRating?: string;
   cast?: Array<CastMember | string>;
   links?: MediaLink[];
@@ -70,37 +76,70 @@ async function request<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function normalizeCatalogItem(item: MediaItem): MediaItem {
+  const normalizedId = String(item.imdb_id || item.id || "");
+  const genres = item.genres?.length ? item.genres : item.genre;
+  return {
+    ...item,
+    id: normalizedId,
+    imdb_id: item.imdb_id || (normalizedId.startsWith("tt") ? normalizedId : undefined),
+    genres,
+  };
+}
+
+export function isUsableMediaItem(item?: Partial<MediaItem>): item is MediaItem {
+  return Boolean(item?.name?.trim() && (item.imdb_id || item.id) && imageUrl(item.poster));
+}
+
 export async function getCatalog(kind: MediaKind, options: { skip?: number; genre?: string } = {}): Promise<MediaItem[]> {
   const extras = [
     options.genre ? `genre=${encodeURIComponent(options.genre)}` : "",
     options.skip ? `skip=${options.skip}` : "",
   ].filter(Boolean);
   const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top${extras.length ? `/${extras.join("/")}` : ""}.json`);
-  return data.metas ?? [];
+  return (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
 }
 
 export async function searchCatalog(kind: MediaKind, query: string): Promise<MediaItem[]> {
   const encoded = encodeURIComponent(query.trim());
   if (!encoded) return [];
   const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top/search=${encoded}.json`);
-  return data.metas ?? [];
+  return (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
 }
 
 export async function getKDramaCatalog(): Promise<MediaItem[]> {
-  const queries = ["Korean", "Squid Game", "The Glory", "Moving", "Crash Landing on You", "When Life Gives You Tangerines"];
+  const queries = ["Korean drama", "K-drama", "Korean series", "Korean", "Squid Game", "The Glory", "Moving"];
   const batches = await Promise.all(queries.map((query) => searchCatalog("series", query).catch(() => [])));
   const seen = new Set<string>();
-  const results: MediaItem[] = [];
+  const candidates: MediaItem[] = [];
   for (const batch of batches) {
     for (const item of batch) {
       const key = item.imdb_id || item.id;
-      if (!seen.has(key) && item.type === "series") {
+      if (!seen.has(key) && item.type === "series" && isUsableMediaItem(item)) {
         seen.add(key);
-        results.push(item);
+        candidates.push(item);
       }
     }
   }
-  return results.slice(0, 14);
+
+  const enriched = await Promise.all(candidates.slice(0, 28).map(async (item) => {
+    try {
+      return { ...item, ...await getMeta("series", item.imdb_id || item.id) };
+    } catch {
+      return item;
+    }
+  }));
+  return enriched.filter((item) => {
+    const country = `${item.country || ""} ${(item.originCountry || []).join(" ")}`;
+    return isUsableMediaItem(item) && (item.originalLanguage === "ko" || /south korea|korea|\bkr\b/i.test(country));
+  }).slice(0, 14);
+}
+
+export async function getAnimeCatalog(): Promise<MediaItem[]> {
+  const animationCatalog = await getCatalog("series", { genre: "Animation" }).catch(() => []);
+  return animationCatalog
+    .filter((item) => isUsableMediaItem(item) && item.type === "series" && item.genres?.some((genre) => genre.toLowerCase() === "animation") && /japan/i.test(item.country || ""))
+    .slice(0, 14);
 }
 
 async function getTmdbMeta(kind: MediaKind, imdbId: string): Promise<Partial<MediaItem> | null> {
@@ -117,19 +156,22 @@ async function getTmdbMeta(kind: MediaKind, imdbId: string): Promise<Partial<Med
 export async function getMeta(kind: MediaKind, id: string): Promise<MediaItem> {
   const [metaId] = decodeURIComponent(id).split(":");
   const [data, tmdb] = await Promise.all([
-    request<{ meta: MediaItem }>(`/meta/${kind}/${metaId}.json`),
+    request<{ meta?: MediaItem }>(`/meta/${kind}/${metaId}.json`).catch(() => ({ meta: undefined })),
     getTmdbMeta(kind, metaId),
   ]);
-  if (!tmdb) return data.meta;
+  const cinemeta = data?.meta;
+  if (!cinemeta && !tmdb) throw new Error("لم يتم العثور على بيانات هذا العنوان.");
+  if (!tmdb) return cinemeta as MediaItem;
   return {
-    ...data.meta,
+    ...cinemeta,
     ...tmdb,
-    id: data.meta.id,
-    imdb_id: data.meta.imdb_id || tmdb.imdb_id,
-    type: data.meta.type || kind,
-    videos: data.meta.videos,
-    cast: tmdb.cast?.length ? tmdb.cast : data.meta.cast,
-    genres: tmdb.genres?.length ? tmdb.genres : data.meta.genres,
+    id: cinemeta?.id || tmdb.id || metaId,
+    name: cinemeta?.name || tmdb.name || metaId,
+    imdb_id: cinemeta?.imdb_id || tmdb.imdb_id || (metaId.startsWith("tt") ? metaId : undefined),
+    type: cinemeta?.type || kind,
+    videos: cinemeta?.videos,
+    cast: tmdb.cast?.length ? tmdb.cast : cinemeta?.cast,
+    genres: tmdb.genres?.length ? tmdb.genres : cinemeta?.genres,
   };
 }
 
