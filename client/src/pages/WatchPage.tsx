@@ -58,20 +58,48 @@ export default function WatchPage() {
   const activeServerLabel = PLAYER_SERVERS.find((option) => option.id === server)?.label || "Rakan";
   const playerUrl = useMemo(() => {
     const selectedServer = PLAYER_SERVERS.find((option) => option.id === server)?.serverNumber || 1;
-    const params = new URLSearchParams({
-      type: isSeries ? "tv" : "movie",
-      id: contentId,
-      server: String(selectedServer),
-    });
-    if (isSeries) {
-      params.set("s", String(episode?.season || 1));
-      params.set("e", String(episode?.episode || 1));
+    const tmdbId = encodeURIComponent(contentId);
+    const seasonNumber = episode?.season || 1;
+    const episodeNumber = episode?.episode || 1;
+    if (selectedServer === 1) {
+      return isSeries
+        ? `https://vixsrc.to/tv/${tmdbId}/${seasonNumber}/${episodeNumber}?autoPlay=true&lang=en`
+        : `https://vixsrc.to/movie/${tmdbId}?autoPlay=true&lang=en`;
     }
-    return `https://tmdbplayer.nunesnetwork.com/?${params.toString()}`;
+    if (selectedServer === 2) {
+      return isSeries
+        ? `https://moviesapi.to/tv/${tmdbId}-${seasonNumber}-${episodeNumber}`
+        : `https://moviesapi.to/movie/${tmdbId}`;
+    }
+    if (selectedServer === 3) {
+      return isSeries
+        ? `https://vidsrc-embed.ru/embed/tv?tmdb=${tmdbId}&season=${seasonNumber}&episode=${episodeNumber}&autoplay=1`
+        : `https://vidsrc-embed.ru/embed/movie?tmdb=${tmdbId}&autoplay=1`;
+    }
+    if (selectedServer === 4) {
+      return isSeries
+        ? `https://player.videasy.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}?nextEpisode=true&episodeSelector=true`
+        : `https://player.videasy.net/movie/${tmdbId}`;
+    }
+    if (selectedServer === 5) {
+      return isSeries
+        ? `https://vidfast.vc/tv/${tmdbId}/${seasonNumber}/${episodeNumber}?autoPlay=true`
+        : `https://vidfast.vc/movie/${tmdbId}?autoPlay=true`;
+    }
+    return isSeries
+      ? `https://vidlink.pro/tv/${tmdbId}/${seasonNumber}/${episodeNumber}?title=true&poster=true&autoplay=true&nextbutton=true`
+      : `https://vidlink.pro/movie/${tmdbId}?title=true&poster=true&autoplay=true`;
   }, [contentId, episode, isSeries, server]);
 
   useEffect(() => {
-    const allowedOrigins = new Set(["https://tmdbplayer.nunesnetwork.com"]);
+    const allowedOrigins = new Set([
+      "https://vixsrc.to",
+      "https://moviesapi.to",
+      "https://vidsrc-embed.ru",
+      "https://player.videasy.net",
+      "https://vidfast.vc",
+      "https://vidlink.pro",
+    ]);
     function onPlayerMessage(event: MessageEvent) {
       if (!allowedOrigins.has(event.origin)) return;
       try {

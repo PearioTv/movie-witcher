@@ -158,13 +158,7 @@
   .player-prologue > b { @apply mr-auto rounded-full border border-white/10 px-2 py-1 text-[.54rem] text-[#bbb6af]; }
   .player-frame { @apply relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_24px_60px_rgba(0,0,0,.46)] sm:rounded-[1.5rem]; }
   .player-frame iframe { @apply size-full border-0; }
-  /* Crop TMDB Player's page padding/header and hide its right-side server rail. */
-  .player-frame iframe.player-frame__embed { display: block; width: 100%; height: calc(100% + 6.5rem); transform: translateY(-6.5rem); }
-  .player-frame::before { content: ""; position: absolute; z-index: 2; pointer-events: none; top: 0; right: 0; bottom: 0; width: 34%; background: #10100f; }
-  .player-frame::after { content: ""; position: absolute; z-index: 2; pointer-events: none; left: 0; right: 0; bottom: 0; height: 1.5rem; background: #10100f; }
-  @media (max-width: 768px) {
-    .player-frame::before { display: none; }
-  }
+  .player-frame iframe.player-frame__embed { display: block; width: 100%; height: 100%; }
   .watch-action { @apply h-10 shrink-0 gap-2 rounded-xl bg-[#e33b2f] px-4 text-xs font-bold text-white hover:bg-[#f04b3f]; }
   .meta-divider { @apply size-1 rounded-full bg-white/25; }
   .genre-chip { @apply rounded-full border border-white/10 px-2 py-1 text-[.65rem] text-[#cac5be]; }
