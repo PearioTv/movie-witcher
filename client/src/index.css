@@ -104,16 +104,19 @@
   .intro-ribbon__link { @apply mr-auto inline-flex shrink-0 items-center gap-2 text-xs font-bold text-[#f6f0e8] transition hover:text-[#e33b2f]; }
   .media-rail { @apply -mx-5 flex gap-3 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:gap-4 sm:px-8 lg:-mx-10 lg:px-10; scrollbar-width: thin; scrollbar-color: rgba(227,59,47,.6) transparent; }
   .media-card { @apply block w-[9.45rem] shrink-0 no-underline sm:w-[10.7rem]; }
-  .media-card__poster { @apply relative aspect-[2/3] overflow-hidden rounded-[1rem] bg-[#22211f] shadow-[0_20px_35px_rgba(0,0,0,.25)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_26px_42px_rgba(0,0,0,.48)]; }
-  .media-card__poster img { @apply size-full object-cover transition duration-500 group-hover:scale-[1.055]; }
+  .media-card__poster { @apply relative aspect-[2/3] overflow-hidden rounded-[.35rem] bg-[#22211f] shadow-[0_14px_28px_rgba(0,0,0,.26)] transition duration-200 group-hover:-translate-y-1 group-hover:shadow-[0_20px_36px_rgba(0,0,0,.5)]; }
+  .media-card__poster img { @apply size-full object-cover transition duration-300 group-hover:scale-[1.035]; }
   .media-card__fallback { @apply grid size-full place-items-center bg-gradient-to-br from-[#3d3934] to-[#171614] text-xl font-bold text-[#e33b2f]; font-family: "Space Grotesk", "Manrope", sans-serif; }
-  .media-card__veil { @apply absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 transition group-hover:opacity-90; }
-  .media-card__play { @apply absolute bottom-3 right-3 grid size-8 place-items-center rounded-full bg-[#f6f0e8] text-[#1b1a18] opacity-0 shadow-lg transition duration-200 group-hover:opacity-100; }
-  .media-card__rating { @apply absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[.62rem] font-bold text-[#f4eee5] backdrop-blur-md; }
-  .media-card__rating svg { @apply text-[#e33b2f]; }
-  .media-card__frame { @apply absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-black/50 px-1.5 py-1 text-[.53rem] font-bold uppercase tracking-[.12em] text-[#d8d2ca] backdrop-blur-md; }
+  .media-card__play { @apply absolute inset-0 m-auto grid size-10 place-items-center rounded-full bg-white text-black opacity-0 shadow-xl transition duration-200 group-hover:opacity-100; }
+  .media-card__quality { @apply absolute right-1.5 top-1.5 rounded-[.18rem] bg-white px-1.5 py-1 text-[.58rem] font-black leading-none text-black shadow-sm; }
+  .media-card__frame { @apply absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-black/60 px-1.5 py-1 text-[.53rem] font-bold uppercase tracking-[.12em] text-[#d8d2ca] backdrop-blur-md; }
   .media-card__frame b { @apply text-[#e33b2f]; }
   .media-card__frame i { @apply h-2.5 w-px bg-white/30; }
+  .media-card__info { @apply pt-2; }
+  .media-card__info h3 { @apply truncate text-[.76rem] font-bold tracking-[-.02em] text-[#eeeae3]; }
+  .media-card__meta { @apply mt-1 flex min-w-0 items-center gap-1.5 text-[.58rem] font-medium text-[#918e88]; }
+  .media-card__meta i { @apply size-0.5 shrink-0 rounded-full bg-[#77736c]; }
+  .media-card__meta em { @apply ml-auto shrink-0 rounded-[.18rem] border border-[#7b7974] px-1 py-0.5 text-[.52rem] not-italic leading-none text-[#c6c2bb]; }
   .explore-banner { @apply relative min-h-[23rem] rounded-[1.7rem] border border-white/[.08] bg-[#1a1917] sm:rounded-[2rem]; }
   .explore-banner__image { @apply absolute inset-0 bg-cover bg-center; background-image: linear-gradient(90deg, rgba(15,15,14,.94) 5%, rgba(15,15,14,.72) 44%, rgba(15,15,14,.13)), url('/assets/movie-witcher-watch.jpg'); }
   .explore-banner__content { @apply relative z-10 max-w-lg p-7 sm:p-11; }
@@ -234,41 +237,26 @@
 }
 
 @layer components {
-  .home-catalog-shell { @apply relative z-10 mt-0 rounded-t-[2rem] bg-[#050505] pt-10 sm:rounded-t-[3rem] sm:pt-14; }
-  .home-catalog-inner { @apply mx-auto max-w-[1480px] px-5 sm:px-8 lg:px-10; }
-  .continue-section { @apply pb-7; }
-  .home-section-heading { @apply mb-5 flex items-center justify-between gap-4; }
-  .home-section-heading h2 { @apply flex min-w-0 items-center gap-2 text-[1.05rem] font-extrabold tracking-[-.035em] text-[#f0ede8] sm:text-xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
-  .section-play-mark { @apply grid size-4 shrink-0 place-items-center rounded-full bg-[#e33b2f] text-white; }
-  .section-red-line { @apply mr-2 inline-block h-4 w-1 rounded-full bg-[#e33b2f] align-[-2px]; }
-  [dir="rtl"] .section-red-line { @apply mr-0 ml-2; }
-  .home-see-all { @apply inline-flex shrink-0 items-center gap-1 text-[.62rem] font-bold text-[#8c8a86] transition hover:text-white; }
-  .continue-grid { @apply grid gap-3 sm:grid-cols-3; }
-  .continue-card { @apply relative min-h-[7.2rem] overflow-hidden rounded-xl border border-white/10 bg-[#161616] shadow-[0_16px_34px_rgba(0,0,0,.24)] transition hover:-translate-y-0.5 hover:border-white/20; }
-  .continue-card__image { @apply absolute inset-0; }
-  .continue-card__image img { @apply size-full object-cover opacity-70; }
-  .continue-card__veil { @apply absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-black/10; }
-  [dir="rtl"] .continue-card__veil { @apply bg-gradient-to-l; }
-  .continue-card__body { @apply relative z-10 flex min-h-[7.2rem] flex-col justify-end p-3; }
-  .continue-card__kind { @apply mb-1 text-[.55rem] font-bold uppercase tracking-[.14em] text-[#e33b2f]; }
-  .continue-card__body strong { @apply line-clamp-1 text-sm font-bold text-[#f5f0ea]; }
-  .continue-card__body small { @apply mt-1 text-[.62rem] text-[#b1ada5]; }
-  .continue-card__play { @apply absolute right-3 top-3 grid size-7 place-items-center rounded-full bg-white text-black opacity-0 transition group-hover:opacity-100; }
-  [dir="rtl"] .continue-card__play { @apply right-auto left-3; }
-  .continue-progress { @apply mt-2 h-0.5 overflow-hidden rounded-full bg-white/20; }
-  .continue-progress i { @apply block h-full rounded-full bg-[#e33b2f]; }
-  .home-rail-section { @apply border-t border-white/[.07] py-7 sm:py-9; }
-  .home-media-rail { @apply -mx-1 gap-3 overflow-x-auto pb-2; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.2) transparent; }
-  .home-media-rail .media-card { @apply w-[7.3rem] sm:w-[8.2rem] lg:w-[9rem]; }
-  .home-media-rail .media-card__poster { @apply rounded-lg; }
-  .home-media-rail .media-card h3 { @apply text-[.72rem]; }
-  .home-media-rail .media-card p { @apply text-[.56rem]; }
-  .hero-title-logo { @apply mt-5 block max-h-28 w-auto max-w-[min(31rem,86vw)] object-contain object-left; }
-  [dir="rtl"] .hero-title-logo { @apply object-right; }
-  .home-rail-skeleton { @apply flex gap-3 overflow-hidden; }
-  .home-rail-skeleton span { @apply h-56 w-32 shrink-0 animate-pulse rounded-xl bg-white/[.07]; }
+  .home-library { @apply min-h-screen bg-[#080808] text-[#f4f0e9]; }
+  .home-catalog-shell { @apply relative z-10 bg-[#080808] pt-8 sm:pt-10; }
+  .home-catalog-inner { @apply mx-auto max-w-[1580px] px-5 sm:px-8 lg:px-10; }
+  .home-library-heading { @apply mb-7 flex flex-col justify-between gap-4 border-b border-white/[.08] pb-6 sm:flex-row sm:items-end; }
+  .home-library-heading h1 { @apply mt-2 text-3xl font-bold tracking-[-.065em] text-[#f5f0e9] sm:text-4xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .home-library-search { @apply inline-flex items-center gap-2 self-start rounded-md border border-white/15 px-3 py-2 text-[.65rem] font-bold text-[#d4d0ca] transition hover:border-white/30 hover:bg-white/[.05] sm:self-auto; }
+  .home-grid-section { @apply border-b border-white/[.08] py-8 sm:py-10; }
+  .home-grid-heading { @apply mb-5 flex items-center justify-between gap-4; }
+  .home-grid-heading__title { @apply flex min-w-0 items-center gap-2.5; }
+  .home-grid-heading__mark { @apply grid size-7 shrink-0 place-items-center rounded-md bg-[#e33b2f] text-white; }
+  .home-grid-heading h2 { @apply truncate text-xl font-medium tracking-[-.045em] text-[#f1eee8] sm:text-2xl; font-family: "Space Grotesk", "Manrope", sans-serif; }
+  .home-grid-heading__label { @apply hidden rounded-sm border border-white/15 px-2 py-1 text-[.55rem] font-bold uppercase tracking-[.1em] text-[#a5a19a] sm:inline-block; }
+  .home-see-all { @apply inline-flex shrink-0 items-center gap-1 text-[.62rem] font-bold text-[#9a9791] transition hover:text-white; }
+  .home-grid { @apply grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8; }
+  .home-grid .media-card { @apply w-full min-w-0; }
+  .home-grid .media-card__poster { @apply rounded-[.3rem]; }
+  .home-grid--skeleton span { @apply aspect-[2/3] animate-pulse rounded-[.3rem] bg-white/[.08]; }
+  .home-grid-empty { @apply rounded-lg border border-dashed border-white/10 bg-white/[.02] p-10 text-center text-xs text-[#8c8982]; }
   .home-catalog-error { @apply border-t border-white/10 py-12 text-center text-xs text-[#85827d]; }
-  .home-footer { @apply mx-auto max-w-[1480px] px-5 pb-10 pt-4 text-[.63rem] text-[#7e7b76] sm:px-8 lg:px-10; }
+  .home-footer { @apply mx-auto max-w-[1580px] px-5 pb-10 pt-4 text-[.63rem] text-[#7e7b76] sm:px-8 lg:px-10; }
   .home-footer strong { @apply block text-xs font-bold text-[#ded9d1]; }
   .home-footer p { @apply mt-3 max-w-md leading-5; }
   .home-footer span { @apply mt-3 inline-flex rounded-full border border-white/10 px-2.5 py-1; }
