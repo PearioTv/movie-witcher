@@ -158,8 +158,8 @@
   .player-prologue > b { @apply mr-auto rounded-full border border-white/10 px-2 py-1 text-[.54rem] text-[#bbb6af]; }
   .player-frame { @apply relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_24px_60px_rgba(0,0,0,.46)] sm:rounded-[1.5rem]; }
   .player-frame iframe { @apply size-full border-0; }
-  .player-frame__label { @apply absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/45 px-2.5 py-1.5 text-[.55rem] font-bold tracking-[.14em] text-[#e6e0d8] backdrop-blur-md; }
-  .player-frame__label i { @apply size-1.5 rounded-full bg-[#e33b2f] shadow-[0_0_8px_#e33b2f]; }
+  /* TMDB Player has an 80px navigation header; crop it so only the playback surface is visible. */
+  .player-frame__embed { height: calc(100% + 5rem); transform: translateY(-5rem); }
   .watch-action { @apply h-10 shrink-0 gap-2 rounded-xl bg-[#e33b2f] px-4 text-xs font-bold text-white hover:bg-[#f04b3f]; }
   .meta-divider { @apply size-1 rounded-full bg-white/25; }
   .genre-chip { @apply rounded-full border border-white/10 px-2 py-1 text-[.65rem] text-[#cac5be]; }
