@@ -1,5 +1,7 @@
 export type MediaKind = "movie" | "series";
 
+import { isImdbId } from "@shared/validation";
+
 export type CastMember = {
   name: string;
   character?: string;
@@ -61,6 +63,9 @@ export type WatchHistoryEntry = {
   season?: number;
   episode?: number;
   episodeTitle?: string;
+  positionSeconds?: number;
+  durationSeconds?: number;
+  completed?: boolean;
   updatedAt: number;
 };
 
@@ -69,9 +74,11 @@ const WATCH_HISTORY_KEY = "mw-watch-history";
 const CINEMETA_URL = "https://v3-cinemeta.strem.io";
 const translationCache = new Map<string, string>();
 const castPhotoCache = new Map<string, string | undefined>();
+const catalogCache = new Map<string, { expiresAt: number; value: MediaItem[] }>();
+const CATALOG_CACHE_TTL = 90_000;
 
 async function request<T>(path: string): Promise<T> {
-  const response = await fetch(`${CINEMETA_URL}${path}`);
+  const response = await fetch(`${CINEMETA_URL}${path}`, { signal: AbortSignal.timeout(8_000) });
   if (!response.ok) throw new Error("تعذر الوصول إلى كتالوج المحتوى الآن.");
   return response.json() as Promise<T>;
 }
@@ -96,15 +103,25 @@ export async function getCatalog(kind: MediaKind, options: { skip?: number; genr
     options.genre ? `genre=${encodeURIComponent(options.genre)}` : "",
     options.skip ? `skip=${options.skip}` : "",
   ].filter(Boolean);
+  const cacheKey = `catalog:${kind}:${extras.join("/")}`;
+  const cached = catalogCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
   const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top${extras.length ? `/${extras.join("/")}` : ""}.json`);
-  return (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
+  const value = (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
+  catalogCache.set(cacheKey, { expiresAt: Date.now() + CATALOG_CACHE_TTL, value });
+  return value;
 }
 
 export async function searchCatalog(kind: MediaKind, query: string): Promise<MediaItem[]> {
   const encoded = encodeURIComponent(query.trim());
   if (!encoded) return [];
+  const cacheKey = `search:${kind}:${query.trim().toLowerCase()}`;
+  const cached = catalogCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
   const data = await request<{ metas?: MediaItem[] }>(`/catalog/${kind}/top/search=${encoded}.json`);
-  return (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
+  const value = (data.metas ?? []).map(normalizeCatalogItem).filter(isUsableMediaItem);
+  catalogCache.set(cacheKey, { expiresAt: Date.now() + CATALOG_CACHE_TTL, value });
+  return value;
 }
 
 export async function getKDramaCatalog(): Promise<MediaItem[]> {
@@ -144,7 +161,7 @@ export async function getAnimeCatalog(): Promise<MediaItem[]> {
 
 async function getTmdbMeta(kind: MediaKind, imdbId: string): Promise<Partial<MediaItem> | null> {
   try {
-    const response = await fetch(`/api/tmdb/${kind}/${encodeURIComponent(imdbId)}`);
+    const response = await fetch(`/api/tmdb/${kind}/${encodeURIComponent(imdbId)}`, { signal: AbortSignal.timeout(8_000) });
     if (!response.ok) return null;
     const payload = await response.json() as { title?: Partial<MediaItem> };
     return payload.title || null;
@@ -182,7 +199,7 @@ export async function translateText(text: string, target: "ar" | "en"): Promise<
   const cached = translationCache.get(cacheKey);
   if (cached) return cached;
   const endpoint = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(source)}&langpair=en%7C${target}`;
-  const response = await fetch(endpoint);
+  const response = await fetch(endpoint, { signal: AbortSignal.timeout(8_000) });
   if (!response.ok) throw new Error("Translation unavailable");
   const payload = await response.json() as { responseStatus?: number; responseData?: { translatedText?: string } };
   const translated = payload.responseStatus === 200 ? payload.responseData?.translatedText || source : source;
@@ -195,7 +212,7 @@ async function wikipediaPhoto(name: string): Promise<string | undefined> {
   if (cached !== undefined || castPhotoCache.has(name)) return cached;
   try {
     const endpoint = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=320&titles=${encodeURIComponent(name)}`;
-    const response = await fetch(endpoint);
+    const response = await fetch(endpoint, { signal: AbortSignal.timeout(8_000) });
     if (!response.ok) return undefined;
     const payload = await response.json() as { query?: { pages?: Record<string, { thumbnail?: { source?: string } }> } };
     const page = Object.values(payload.query?.pages || {})[0];
@@ -210,7 +227,7 @@ async function wikipediaPhoto(name: string): Promise<string | undefined> {
 
 export async function getFullCast(imdbId: string): Promise<CastMember[]> {
   const normalizedId = imdbId.trim();
-  if (!/^tt\d+$/.test(normalizedId)) return [];
+  if (!isImdbId(normalizedId)) return [];
   try {
     const response = await fetch(`/api/cast/${encodeURIComponent(normalizedId)}`);
     if (!response.ok) return [];
@@ -284,6 +301,7 @@ function writeWatchHistory(entries: WatchHistoryEntry[]) {
 export function recordWatchHistory(item: MediaItem, kind: MediaKind, episode?: Episode) {
   const id = item.imdb_id || item.id;
   const current = readWatchHistory();
+  const previous = current.find((value) => value.id === id && value.kind === kind && value.season === episode?.season && value.episode === episode?.episode);
   const entry: WatchHistoryEntry = {
     id,
     kind,
@@ -296,9 +314,28 @@ export function recordWatchHistory(item: MediaItem, kind: MediaKind, episode?: E
     season: episode?.season,
     episode: episode?.episode,
     episodeTitle: episode?.title,
+    positionSeconds: previous?.positionSeconds,
+    durationSeconds: previous?.durationSeconds,
+    completed: previous?.completed,
     updatedAt: Date.now(),
   };
-  writeWatchHistory([entry, ...current.filter((value) => !(value.id === id && value.kind === kind))]);
+  writeWatchHistory([entry, ...current.filter((value) => !(value.id === id && value.kind === kind && value.season === episode?.season && value.episode === episode?.episode))]);
+}
+
+export function updateWatchProgress(item: MediaItem, kind: MediaKind, progress: { positionSeconds?: number; durationSeconds?: number; completed?: boolean }, episode?: Episode) {
+  const id = item.imdb_id || item.id;
+  const current = readWatchHistory();
+  const index = current.findIndex((value) => value.id === id && value.kind === kind && value.season === episode?.season && value.episode === episode?.episode);
+  if (index < 0) {
+    recordWatchHistory(item, kind, episode);
+    return updateWatchProgress(item, kind, progress, episode);
+  }
+  const existing = current[index];
+  const positionSeconds = Number.isFinite(progress.positionSeconds) ? Math.max(0, progress.positionSeconds as number) : existing.positionSeconds;
+  const durationSeconds = Number.isFinite(progress.durationSeconds) ? Math.max(0, progress.durationSeconds as number) : existing.durationSeconds;
+  const completed = progress.completed ?? (durationSeconds && positionSeconds ? positionSeconds / durationSeconds >= 0.95 : existing.completed);
+  current[index] = { ...existing, positionSeconds, durationSeconds, completed, updatedAt: Date.now() };
+  writeWatchHistory(current);
 }
 
 export function removeWatchHistory(id: string, kind?: MediaKind) {

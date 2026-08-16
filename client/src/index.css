@@ -292,6 +292,7 @@
   .history-grid { @apply mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3; }
   .history-card { @apply overflow-hidden rounded-2xl border border-white/10 bg-[#111111] transition hover:-translate-y-1 hover:border-white/20; }
   .history-card__visual { @apply relative block aspect-[1.22/1] overflow-hidden; }
+  .history-card__visual a:focus-visible, .history-card__remove button:focus-visible, .history-tab:focus-visible, .history-action:focus-visible { @apply outline-none ring-2 ring-[#e33b2f] ring-offset-2 ring-offset-[#050505]; }
   .history-card__image, .history-card__image img { @apply size-full; }
   .history-card__image img { @apply object-cover; }
   .history-card__shade { @apply absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/10; }

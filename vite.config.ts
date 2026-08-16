@@ -6,6 +6,7 @@ import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { resolveTmdbTitle } from "./server/tmdb";
+import { isImdbId } from "./shared/validation";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -160,7 +161,7 @@ function vitePluginTmdbProxy(): Plugin {
         const parts = req.url?.split("?")[0]?.split("/").filter(Boolean) || [];
         const kind = parts[0] === "series" ? "series" : parts[0] === "movie" ? "movie" : null;
         const imdbId = parts[1] || "";
-        if (!kind || !/^tt\d+$/.test(imdbId)) {
+        if (!kind || !isImdbId(imdbId)) {
           res.statusCode = 400;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ error: "Invalid TMDB title request" }));
@@ -195,7 +196,7 @@ function vitePluginCastProxy(): Plugin {
       server.middlewares.use("/api/cast", async (req, res, next) => {
         if (req.method !== "GET") return next();
         const rawId = req.url?.split("?")[0]?.replace(/^\//, "") || "";
-        if (!/^tt\d+$/.test(rawId)) {
+        if (!isImdbId(rawId)) {
           res.statusCode = 400;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ error: "Invalid IMDb id" }));

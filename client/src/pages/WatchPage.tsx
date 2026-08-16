@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Clock3, Film, Play, Star } from "lucide-reac
 import { Link, useParams } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { backdropUrl, playerId, recordWatchHistory, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
+import { backdropUrl, playerId, recordWatchHistory, updateWatchProgress, type Episode, type MediaItem, type MediaKind, getMeta, imageUrl } from "@/lib/stremio";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useLocalizedDescription } from "@/hooks/useLocalizedDescription";
 
@@ -92,6 +92,8 @@ export default function WatchPage() {
   }, [contentId, episode, isSeries, server]);
 
   useEffect(() => {
+    if (!meta) return;
+    const activeMeta = meta;
     const allowedOrigins = new Set([
       "https://vixsrc.to",
       "https://moviesapi.to",
@@ -105,8 +107,25 @@ export default function WatchPage() {
       try {
         const raw = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (raw?.type === "PLAYER_EVENT" && raw.data) {
-          const progressKey = `mw-progress-${kind}-${contentId}`;
-          localStorage.setItem(progressKey, JSON.stringify({ ...raw.data, updatedAt: Date.now() }));
+          const data = raw.data as Record<string, unknown>;
+          const numberValue = (...keys: string[]) => {
+            for (const key of keys) {
+              const value = Number(data[key]);
+              if (Number.isFinite(value) && value >= 0) return value;
+            }
+            return undefined;
+          };
+          let positionSeconds = numberValue("currentTime", "current_time", "position", "positionSeconds");
+          const durationSeconds = numberValue("duration", "durationSeconds", "totalDuration");
+          const normalizedProgress = numberValue("progress", "percentage");
+          if (positionSeconds === undefined && durationSeconds !== undefined && normalizedProgress !== undefined) {
+            const fraction = normalizedProgress > 1 ? normalizedProgress / 100 : normalizedProgress;
+            if (fraction <= 1) positionSeconds = durationSeconds * fraction;
+          }
+          const completed = data.ended === true || data.completed === true || (durationSeconds !== undefined && positionSeconds !== undefined && positionSeconds / durationSeconds >= 0.95);
+          updateWatchProgress(activeMeta, kind, { positionSeconds, durationSeconds, completed }, episode || undefined);
+          const progressKey = `mw-progress-${kind}-${contentId}-${episode?.season || 0}-${episode?.episode || 0}`;
+          localStorage.setItem(progressKey, JSON.stringify({ ...data, positionSeconds, durationSeconds, completed, updatedAt: Date.now() }));
           return;
         }
       } catch {
@@ -115,7 +134,7 @@ export default function WatchPage() {
     }
     window.addEventListener("message", onPlayerMessage);
     return () => window.removeEventListener("message", onPlayerMessage);
-  }, [contentId, kind]);
+  }, [contentId, episode, kind, meta]);
 
   function changeSeason(next: number) {
     setSeason(next);
