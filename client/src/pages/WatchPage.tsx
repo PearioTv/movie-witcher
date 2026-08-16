@@ -113,6 +113,8 @@ export default function WatchPage() {
           {!loading && error && <div className="search-empty mt-16"><Film size={22} className="text-[#e33b2f]" /><div><h1>{t("watch.failedTitle")}</h1><p>{error}</p></div></div>}
           {!loading && meta && (
             <div className="pt-8 lg:pt-12">
+              <div className="player-prologue"><span>SCREEN / 01</span><i /><p>{isSeries ? t("watch.activeSeason", { season, episode: episode?.episode || 1 }) : t("watch.selectedMovie")}</p><b>MW / PLAYBACK</b></div>
+              <div className="player-server-bar"><span className="player-server-bar__label">{t("watch.server")}</span><div className="player-server-options">{PLAYER_SERVERS.map((option) => <button key={option.id} type="button" onClick={() => setServer(option.id)} className={server === option.id ? "player-server-option player-server-option--active" : "player-server-option"}>{option.label}</button>)}</div><small>{t("watch.serverNote")}</small></div>
               <section className="player-frame">
                 <iframe className="player-frame__embed" key={playerUrl} src={playerUrl} title={`${meta.name} — ${server}`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
               </section>
