@@ -352,7 +352,7 @@
   .home-hero__dots b { @apply w-7 bg-[#e33b2f]; }
   .home-hero__art { @apply absolute inset-y-0 right-0 -z-10 w-full overflow-hidden lg:w-[68%]; }
   [dir="rtl"] .home-hero__art { @apply right-auto left-0; }
-  .home-hero__art img { @apply size-full object-cover object-center; filter: grayscale(1) contrast(1.08); }
+  .home-hero__art img { @apply size-full object-cover object-center; }
   .home-hero__art-shade { @apply absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,.92)_18%,rgba(7,7,7,.45)_55%,rgba(7,7,7,.08)_100%),linear-gradient(0deg,#070707_0%,transparent_30%,rgba(0,0,0,.1)_100%)]; }
   [dir="rtl"] .home-hero__art-shade { @apply bg-[linear-gradient(270deg,#070707_0%,rgba(7,7,7,.92)_18%,rgba(7,7,7,.45)_55%,rgba(7,7,7,.08)_100%),linear-gradient(0deg,#070707_0%,transparent_30%,rgba(0,0,0,.1)_100%)]; }
   .home-hero__art-fallback { @apply grid size-full place-items-center bg-[#111] text-6xl font-black text-[#e33b2f]; }
@@ -368,8 +368,8 @@
   .home-continue__grid { @apply grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4; }
   .home-continue__card { @apply overflow-hidden rounded-xl border border-white/10 bg-[#111] transition hover:-translate-y-0.5 hover:border-white/25; }
   .home-continue__visual { @apply relative aspect-[1.75/1] overflow-hidden bg-[#1b1b1b]; }
-  .home-continue__visual img { @apply size-full object-cover grayscale transition duration-300; }
-  .home-continue__card:hover .home-continue__visual img { @apply scale-105 grayscale-0; }
+  .home-continue__visual img { @apply size-full object-cover transition duration-300; }
+  .home-continue__card:hover .home-continue__visual img { @apply scale-105; }
   .home-continue__visual::after { content: ""; @apply absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent; }
   .home-continue__visual span { @apply absolute right-3 top-3 z-10 grid size-8 place-items-center rounded-full bg-white text-black; }
   [dir="rtl"] .home-continue__visual span { @apply right-auto left-3; }
@@ -388,13 +388,13 @@
   .home-grid { @apply grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-6; }
   .home-grid .media-card { @apply w-full min-w-0; }
   .home-grid .media-card__poster { @apply rounded-lg border border-white/10; }
-  .home-grid .media-card__poster img { filter: grayscale(1); }
-  .home-grid .media-card:hover .media-card__poster img { filter: grayscale(0); }
+  .home-grid .media-card__poster img { filter: none; }
+  .home-grid .media-card:hover .media-card__poster img { filter: none; }
   .home-grid--skeleton span { @apply aspect-[2/3] animate-pulse rounded-lg bg-white/[.08]; }
   .home-editorial { @apply grid gap-3 border-b border-white/[.08] py-8 sm:py-10 lg:grid-cols-[1.35fr_.65fr]; }
   .home-editorial__feature { @apply relative min-h-[20rem] overflow-hidden rounded-xl border border-white/10 bg-[#111]; }
   .home-editorial__image { @apply absolute inset-0; }
-  .home-editorial__image img { @apply size-full object-cover grayscale; }
+  .home-editorial__image img { @apply size-full object-cover; }
   .home-editorial__feature::after { content: ""; @apply absolute inset-0 bg-gradient-to-r from-black via-black/65 to-transparent; }
   .home-editorial__body { @apply relative z-10 max-w-md p-7 sm:p-10; }
   .home-editorial__body p, .home-editorial__list > p { @apply text-[.62rem] font-bold uppercase tracking-[.18em] text-[#e33b2f]; }
@@ -403,7 +403,7 @@
   .home-editorial__body .home-action { @apply mt-6; }
   .home-editorial__list { @apply rounded-xl border border-white/10 bg-[#111] p-5 sm:p-6; }
   .home-editorial__item { @apply mt-4 flex items-center gap-3 border-b border-white/[.08] pb-4 text-white last:border-0 last:pb-0; }
-  .home-editorial__item img { @apply size-14 rounded-lg object-cover grayscale; }
+  .home-editorial__item img { @apply size-14 rounded-lg object-cover; }
   .home-editorial__item span { @apply min-w-0 flex-1; }
   .home-editorial__item strong { @apply block truncate text-sm; }
   .home-editorial__item small { @apply mt-1 flex items-center gap-2 text-[.62rem] text-[#8f8b84]; }
@@ -421,4 +421,22 @@
   .home-footer__links { @apply flex flex-wrap gap-3 text-xs text-[#99948d]; }
   .home-footer__links span { @apply mt-0 border-0 p-0; }
   @media (max-width: 767px) { .home-hero { min-height: 38rem; } .home-hero__art { @apply opacity-55; } .home-hero__copy { @apply px-5; } .home-hero__copy h1 { @apply text-4xl; } }
+}
+
+@layer components {
+  .search-page, .discover-page, .detail-page, .history-page { @apply bg-[#070707] text-white; }
+  .search-page__image, .discover-page__backdrop, .detail-page__backdrop { filter: saturate(1.08) contrast(1.04); }
+  .search-command, .discover-filter, .segment-control, .history-tabs, .watch-summary, .episode-card, .detail-recommendations, .detail-cast { @apply border-white/10 bg-[#111]; }
+  .search-command:focus-within { @apply border-[#e33b2f]/70; }
+  .segment-control__item--active, .history-tab--active, .season-nav__item--active { @apply bg-[#e33b2f]; }
+  .discover-filter svg, .rail-heading__route span, .detail-hero__eyebrow, .history-heading__icon, .watch-back-link:hover { @apply text-[#e33b2f]; }
+  .media-grid .media-card__poster img, .history-card__image img, .detail-hero__poster img { filter: none; }
+  .media-card__poster img, .history-card__image img, .detail-hero__poster img { transition: transform .3s ease, filter .3s ease; }
+  .media-card:hover .media-card__poster img, .history-card:hover .history-card__image img { filter: saturate(1.15) contrast(1.03); }
+  .history-card, .detail-hero__poster, .search-empty { @apply border-white/10 bg-[#111]; }
+  .history-card:hover, .episode-card:hover, .detail-recommendations:hover { @apply border-white/25; }
+  .hero-primary-action, .watch-action, .load-more-button:hover, .home-action--primary { @apply bg-[#e33b2f]; }
+  .hero-primary-action:hover, .watch-action:hover { @apply bg-[#f04b3f]; }
+  .detail-page__backdrop::after, .watch-backdrop::after { @apply from-[#070707] via-[#070707]/70 to-[#070707]/25; }
+  [dir="rtl"] .detail-page__backdrop::after { @apply bg-gradient-to-l; }
 }
