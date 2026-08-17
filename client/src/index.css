@@ -551,3 +551,28 @@
   .home-hero__copy { padding-left: 1.25rem; padding-right: 1.25rem; }
   [dir="rtl"] .home-hero__copy { padding-left: 1.25rem; padding-right: 1.25rem; }
 }
+
+
+/* Balanced hero layout: keep the cinematic composition aligned with the catalog grid. */
+@layer components {
+  .home-hero {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom-color: rgba(255,255,255,.07);
+  }
+  .home-hero__copy {
+    padding-left: clamp(1.5rem, 4vw, 4.75rem);
+    padding-right: clamp(1.5rem, 3vw, 3.5rem);
+  }
+  [dir="rtl"] .home-hero {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  [dir="rtl"] .home-hero__copy {
+    padding-left: clamp(1.5rem, 3vw, 3.5rem);
+    padding-right: clamp(1.5rem, 4vw, 4.75rem);
+  }
+}
