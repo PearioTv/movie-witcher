@@ -15,6 +15,7 @@ export default function Home() {
   const [history, setHistory] = useState<WatchHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogError, setCatalogError] = useState(false);
+  const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -40,8 +41,19 @@ export default function Home() {
   const trending = useMemo(() => interleave(rows.movies.slice(0, 14), rows.series.slice(0, 14)).slice(0, 16), [rows]);
   const latestMovies = useMemo(() => rows.movies.slice(0, 12), [rows.movies]);
   const latestSeries = useMemo(() => rows.series.slice(0, 12), [rows.series]);
-  const featured = trending[0] || rows.movies[0] || rows.series[0];
+  const heroMovies = useMemo(() => rows.movies.slice(0, 5), [rows.movies]);
+  const featured = heroMovies[heroIndex] || heroMovies[0] || rows.movies[0] || rows.series[0];
   const featuredKind = featured?.type === "series" ? "series" : "movie";
+
+  useEffect(() => {
+    if (heroIndex >= heroMovies.length) setHeroIndex(0);
+  }, [heroIndex, heroMovies.length]);
+
+  useEffect(() => {
+    if (heroMovies.length < 2) return;
+    const timer = window.setInterval(() => setHeroIndex((current) => (current + 1) % heroMovies.length), 6500);
+    return () => window.clearInterval(timer);
+  }, [heroMovies.length]);
 
   return (
     <div className="home-library" dir={dir}>
@@ -50,7 +62,7 @@ export default function Home() {
         <div className="home-catalog-inner">
           <section className="home-hero" aria-label={t("hero.eyebrowGuide")}>
             <div className="home-hero__copy">
-              <p className="home-hero__eyebrow"><Sparkles size={13} /> {t("home.catalogEyebrow")}</p>
+              <p className="home-hero__eyebrow"><Sparkles size={13} /> {t("home.weeklyPopular")}</p>
               <h1>{featured?.name || t("home.libraryTitle")}</h1>
               <div className="home-hero__meta"><span>{featured?.year || "2026"}</span><i /> <span>{featuredKind === "series" ? t("hero.series") : t("hero.movie")}</span><i /> <span>{featured?.runtime || "2h 08m"}</span></div>
               <p className="home-hero__desc">{featured?.description || t("home.catalogTagline")}</p>
@@ -58,7 +70,7 @@ export default function Home() {
                 {featured ? <Link href={watchHref(featured, featuredKind)} className="home-action home-action--primary"><Play size={15} fill="currentColor" /> {t("hero.play")}</Link> : <Link href="/search" className="home-action home-action--primary"><Search size={15} /> {t("home.openSearch")}</Link>}
                 {featured && <Link href={detailPath(featured, featuredKind)} className="home-action home-action--secondary">{t("hero.seeMore")} <ArrowRight size={14} /></Link>}
               </div>
-              <div className="home-hero__dots" aria-hidden="true"><b /><span /><span /><span /><span /></div>
+              {heroMovies.length > 1 && <div className="home-hero__dots" aria-label={t("home.weeklyPopular")} role="tablist">{heroMovies.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={heroIndex === index} aria-label={`${index + 1}: ${item.name}`} onClick={() => setHeroIndex(index)} className={heroIndex === index ? "home-hero__dot home-hero__dot--active" : "home-hero__dot"} />)}</div>}
             </div>
             <div className="home-hero__art">
               {featured && (backdropUrl(featured, "large") || imageUrl(featured.poster)) ? <img src={backdropUrl(featured, "large") || imageUrl(featured.poster)} alt="" /> : <div className="home-hero__art-fallback">MW</div>}
