@@ -523,3 +523,31 @@
   from { opacity: 0; transform: translate3d(-24px, 0, 0); filter: blur(5px); }
   to { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
 }
+
+
+/* Full-bleed hero: the artwork reaches the viewport edges instead of feeling boxed in. */
+@layer components {
+  .home-hero {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: 0;
+    border-bottom-color: transparent;
+  }
+  .home-hero__copy {
+    padding-left: clamp(1.25rem, 5vw, 6rem);
+    padding-right: clamp(1.25rem, 3vw, 3rem);
+  }
+  [dir="rtl"] .home-hero {
+    margin-left: 0;
+    margin-right: calc(50% - 50vw);
+  }
+  [dir="rtl"] .home-hero__copy {
+    padding-left: clamp(1.25rem, 3vw, 3rem);
+    padding-right: clamp(1.25rem, 5vw, 6rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .home-hero__copy { padding-left: 1.25rem; padding-right: 1.25rem; }
+  [dir="rtl"] .home-hero__copy { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
