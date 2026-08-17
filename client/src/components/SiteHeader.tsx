@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Globe2, LoaderCircle, Menu, Search, Settings2, Sparkles, X } from "lucide-react";
+import { Globe2, LoaderCircle, Menu, Search, Settings2, Sparkles, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { detailPath, imageUrl, searchCatalog, type MediaItem, type MediaKind } f
 import { locales, type Locale } from "@/lib/translations";
 
 export default function SiteHeader() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const { locale, setLocale, dir, t } = useLocale();
   const [scrolled, setScrolled] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -104,17 +104,6 @@ export default function SiteHeader() {
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} className={`nav-link ${location === item.href ? "nav-link--active" : ""}`}>{item.label}</Link>
           ))}
-          <div className="relative">
-            <button type="button" className="nav-link inline-flex items-center gap-1" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen}>
-              {t("nav.discover")} <ChevronDown size={14} />
-            </button>
-            {menuOpen && (
-              <div className="header-discover-menu" dir={dir}>
-                <button type="button" className="discovery-menu-item" onClick={() => { setLocation("/discover/movies"); setMenuOpen(false); }}>{t("nav.movies")}</button>
-                <button type="button" className="discovery-menu-item" onClick={() => { setLocation("/discover/series"); setMenuOpen(false); }}>{t("nav.series")}</button>
-              </div>
-            )}
-          </div>
         </nav>
 
         <div className="header-search-wrap">
