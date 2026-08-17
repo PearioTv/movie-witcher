@@ -86,7 +86,7 @@ export default function Home() {
       <main className="home-catalog-shell">
         <div className="home-catalog-inner">
           <section className="home-hero" aria-label={t("hero.eyebrowGuide")} onPointerDown={handleHeroPointerDown} onPointerUp={handleHeroPointerUp} onPointerCancel={() => { heroPointerStart.current = null; }}>
-            <div key={`${featured?.id || "empty"}-${heroTransition}`} className="home-hero__copy home-hero__copy--enter">
+            <div key={`copy-${featured?.id || "empty"}-${heroTransition}`} className="home-hero__copy home-hero__copy--enter">
               <p className="home-hero__eyebrow"><Sparkles size={13} /> {t("home.weeklyPopular")}</p>
               <h1>{featured?.name || t("home.libraryTitle")}</h1>
               <div className="home-hero__meta"><span>{featured?.year || "2026"}</span><i /> <span>{featuredKind === "series" ? t("hero.series") : t("hero.movie")}</span><i /> <span>{featured?.runtime || "2h 08m"}</span></div>
@@ -97,7 +97,7 @@ export default function Home() {
               </div>
               {heroMovies.length > 1 && <div className="home-hero__dots" aria-label={t("home.weeklyPopular")} role="tablist">{heroMovies.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={heroIndex === index} aria-label={`${index + 1}: ${item.name}`} onClick={(event) => { event.stopPropagation(); changeHero(index); }} className={heroIndex === index ? "home-hero__dot home-hero__dot--active" : "home-hero__dot"} />)}</div>}
             </div>
-            <div key={`${featured?.id || "empty"}-${heroTransition}`} className="home-hero__art home-hero__art--enter">
+            <div key={`art-${featured?.id || "empty"}-${heroTransition}`} className="home-hero__art home-hero__art--enter">
               {featured && (backdropUrl(featured, "large") || imageUrl(featured.poster)) ? <img src={backdropUrl(featured, "large") || imageUrl(featured.poster)} alt="" /> : <div className="home-hero__art-fallback">MW</div>}
               <div className="home-hero__art-shade" />
               <div className="home-hero__rating"><Star size={14} fill="currentColor" /> <strong>{featured?.imdbRating || "—"}</strong><small>IMDb</small></div>
