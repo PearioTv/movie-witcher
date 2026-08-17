@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { ArrowRight, Clock3, Play, Search, Sparkles, Star } from "lucide-react";
 import { Link } from "wouter";
 import SiteHeader from "@/components/SiteHeader";
@@ -16,6 +16,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [catalogError, setCatalogError] = useState(false);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [heroTransition, setHeroTransition] = useState(0);
+  const heroPointerStart = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -49,19 +51,42 @@ export default function Home() {
     if (heroIndex >= heroMovies.length) setHeroIndex(0);
   }, [heroIndex, heroMovies.length]);
 
+  const changeHero = (nextIndex: number) => {
+    if (heroMovies.length < 2) return;
+    setHeroIndex((current) => {
+      const normalized = (nextIndex + heroMovies.length) % heroMovies.length;
+      return normalized === current ? current : normalized;
+    });
+    setHeroTransition((current) => current + 1);
+  };
+
   useEffect(() => {
     if (heroMovies.length < 2) return;
-    const timer = window.setInterval(() => setHeroIndex((current) => (current + 1) % heroMovies.length), 6500);
+    const timer = window.setInterval(() => changeHero(heroIndex + 1), 6500);
     return () => window.clearInterval(timer);
-  }, [heroMovies.length]);
+  }, [heroMovies.length, heroIndex]);
+
+  function handleHeroPointerDown(event: PointerEvent<HTMLElement>) {
+    heroPointerStart.current = event.clientX;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function handleHeroPointerUp(event: PointerEvent<HTMLElement>) {
+    if (heroPointerStart.current === null) return;
+    const distance = event.clientX - heroPointerStart.current;
+    heroPointerStart.current = null;
+    if (Math.abs(distance) < 55) return;
+    const direction = distance < 0 ? 1 : -1;
+    changeHero(heroIndex + direction);
+  }
 
   return (
     <div className="home-library" dir={dir}>
       <SiteHeader />
       <main className="home-catalog-shell">
         <div className="home-catalog-inner">
-          <section className="home-hero" aria-label={t("hero.eyebrowGuide")}>
-            <div className="home-hero__copy">
+          <section className="home-hero" aria-label={t("hero.eyebrowGuide")} onPointerDown={handleHeroPointerDown} onPointerUp={handleHeroPointerUp} onPointerCancel={() => { heroPointerStart.current = null; }}>
+            <div key={`${featured?.id || "empty"}-${heroTransition}`} className="home-hero__copy home-hero__copy--enter">
               <p className="home-hero__eyebrow"><Sparkles size={13} /> {t("home.weeklyPopular")}</p>
               <h1>{featured?.name || t("home.libraryTitle")}</h1>
               <div className="home-hero__meta"><span>{featured?.year || "2026"}</span><i /> <span>{featuredKind === "series" ? t("hero.series") : t("hero.movie")}</span><i /> <span>{featured?.runtime || "2h 08m"}</span></div>
@@ -70,9 +95,9 @@ export default function Home() {
                 {featured ? <Link href={watchHref(featured, featuredKind)} className="home-action home-action--primary"><Play size={15} fill="currentColor" /> {t("hero.play")}</Link> : <Link href="/search" className="home-action home-action--primary"><Search size={15} /> {t("home.openSearch")}</Link>}
                 {featured && <Link href={detailPath(featured, featuredKind)} className="home-action home-action--secondary">{t("hero.seeMore")} <ArrowRight size={14} /></Link>}
               </div>
-              {heroMovies.length > 1 && <div className="home-hero__dots" aria-label={t("home.weeklyPopular")} role="tablist">{heroMovies.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={heroIndex === index} aria-label={`${index + 1}: ${item.name}`} onClick={() => setHeroIndex(index)} className={heroIndex === index ? "home-hero__dot home-hero__dot--active" : "home-hero__dot"} />)}</div>}
+              {heroMovies.length > 1 && <div className="home-hero__dots" aria-label={t("home.weeklyPopular")} role="tablist">{heroMovies.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={heroIndex === index} aria-label={`${index + 1}: ${item.name}`} onClick={(event) => { event.stopPropagation(); changeHero(index); }} className={heroIndex === index ? "home-hero__dot home-hero__dot--active" : "home-hero__dot"} />)}</div>}
             </div>
-            <div className="home-hero__art">
+            <div key={`${featured?.id || "empty"}-${heroTransition}`} className="home-hero__art home-hero__art--enter">
               {featured && (backdropUrl(featured, "large") || imageUrl(featured.poster)) ? <img src={backdropUrl(featured, "large") || imageUrl(featured.poster)} alt="" /> : <div className="home-hero__art-fallback">MW</div>}
               <div className="home-hero__art-shade" />
               <div className="home-hero__rating"><Star size={14} fill="currentColor" /> <strong>{featured?.imdbRating || "—"}</strong><small>IMDb</small></div>
