@@ -440,3 +440,53 @@
   .detail-page__backdrop::after, .watch-backdrop::after { @apply from-[#070707] via-[#070707]/70 to-[#070707]/25; }
   [dir="rtl"] .detail-page__backdrop::after { @apply bg-gradient-to-l; }
 }
+
+/* Cinematic header search */
+@layer components {
+  .header-search-wrap { @apply relative min-w-0 flex-1 md:max-w-[25rem] lg:max-w-[31rem]; }
+  .header-search-trigger { @apply flex h-11 w-full items-center gap-2.5 rounded-full border border-white/[.09] bg-white/[.035] px-4 text-left text-xs font-semibold text-[#999791] transition hover:border-white/[.18] hover:bg-white/[.07] hover:text-[#f4f0e9]; }
+  .header-search-trigger svg { @apply shrink-0 text-[#e33b2f]; }
+  .header-search-trigger span { @apply min-w-0 flex-1 truncate; }
+  .header-search-trigger kbd { @apply hidden rounded-md border border-white/10 bg-black/20 px-1.5 py-0.5 text-[10px] font-bold text-[#77746f] lg:inline-block; }
+  .header-search-trigger--active { @apply border-[#e33b2f]/60 bg-[#1a1513] text-[#f4f0e9] shadow-[0_0_0_4px_rgba(227,59,47,.08)]; }
+  .header-discover-menu { @apply absolute right-0 top-[calc(100%+.55rem)] z-30 w-44 rounded-2xl border border-white/10 bg-[#191917]/98 p-2 shadow-[0_22px_55px_rgba(0,0,0,.45)] backdrop-blur-xl; }
+  .header-search-panel { @apply absolute left-0 right-0 top-[calc(100%+.65rem)] z-40 overflow-hidden rounded-2xl border border-white/10 bg-[#171715]/98 p-3 shadow-[0_28px_70px_rgba(0,0,0,.55)] backdrop-blur-2xl; min-width: min(24rem, calc(100vw - 2rem)); }
+  .header-search-panel__input { @apply flex h-12 items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-3 text-[#aaa69e] focus-within:border-[#e33b2f]/65; }
+  .header-search-panel__input input { @apply min-w-0 flex-1 bg-transparent text-sm text-[#f4f0e9] outline-none placeholder:text-[#716e68]; }
+  .header-search-panel__input button { @apply rounded-lg p-1 text-[#85817b] transition hover:bg-white/10 hover:text-white; }
+  .header-search-panel__filters { @apply mt-3 flex items-center gap-1.5 border-b border-white/[.08] pb-3; }
+  .header-search-filter { @apply rounded-lg px-3 py-2 text-[11px] font-bold text-[#8e8b85] transition hover:bg-white/[.06] hover:text-white; }
+  .header-search-filter--active { @apply bg-[#e33b2f]/15 text-[#f4f0e9]; }
+  .header-search-advanced { @apply ml-auto rounded-lg px-2 py-2 text-[11px] font-bold text-[#e33b2f] transition hover:bg-[#e33b2f]/10; }
+  .header-search-status { @apply flex items-center gap-2 px-2 py-5 text-xs text-[#aaa69e]; }
+  .header-search-status--error { @apply text-[#f0786d]; }
+  .header-search-hint { @apply px-2 py-5 text-xs leading-6 text-[#85817b]; }
+  .header-search-results { @apply grid gap-1.5 pt-2; }
+  .header-search-result { @apply flex min-w-0 items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/[.07]; }
+  .header-search-result img, .header-search-result__fallback { @apply h-12 w-9 shrink-0 rounded-lg object-cover; }
+  .header-search-result__fallback { @apply flex items-center justify-center bg-[#2a2925] text-[10px] font-black text-[#e33b2f]; }
+  .header-search-result span { @apply min-w-0; }
+  .header-search-result strong { @apply block truncate text-xs font-bold text-[#f4f0e9]; }
+  .header-search-result small { @apply mt-1 block text-[10px] text-[#85817b]; }
+  .header-search-result small i { @apply mx-1 inline-block h-1 w-1 rounded-full bg-[#e33b2f] align-middle; }
+  .header-telegram { @apply h-10 items-center gap-2 rounded-full border border-white/10 px-3 text-[11px] font-bold text-[#d5d0c8] transition hover:border-[#e33b2f]/45 hover:bg-[#e33b2f]/10 hover:text-white; }
+}
+
+@media (max-width: 767px) {
+  .site-header .header-search-wrap { @apply max-w-none; }
+  .site-header .header-search-trigger { @apply px-3; }
+  .site-header .header-search-trigger span, .site-header .header-search-trigger kbd { @apply hidden; }
+  .site-header .header-search-trigger { @apply justify-center; }
+  .header-search-panel { @apply fixed left-3 right-3 top-[4.9rem] w-auto; min-width: 0; }
+}
+
+@media (min-width: 768px) and (max-width: 1050px) {
+  .site-header .nav-link { @apply px-2 py-2; }
+  .site-header .header-search-trigger span { @apply hidden; }
+  .site-header .header-search-trigger { @apply justify-center; }
+}
+
+[dir="rtl"] .header-search-trigger, [dir="rtl"] .header-search-panel__input, [dir="rtl"] .header-search-result { text-align: right; }
+[dir="rtl"] .header-search-advanced { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .header-discover-menu { left: 0; right: auto; }
+.media-card img, .home-hero img, .home-editorial img, .detail-page__backdrop { filter: none; }
